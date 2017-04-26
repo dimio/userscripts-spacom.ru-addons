@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::ExploreAllGeo
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.0.1
 // @description  Geo-exploring auto buying
 // @author       dimio
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
