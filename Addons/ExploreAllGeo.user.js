@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::ExploreAllGeo
 // @namespace    http://tampermonkey.net/
-// @version      0.0.1
+// @version      0.0.2
 // @description  Geo-exploring auto buying
 // @author       dimio
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
@@ -10,7 +10,7 @@
 // @run-at       document-end
 // ==/UserScript==
 // Based on "Spacom addons" by segrey (https://greasyfork.org/en/scripts/27897-spacom-addons https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
-console.log( "Spacom::Addons::ExploreAllGeo booted" );
+console.log( 'Spacom::Addons::ExploreAllGeo booted' );
 
 const EXPLORE_COST = 25;
 
@@ -32,17 +32,17 @@ const EXPLORE_COST = 25;
 		}, 0);
 	}
 
-	function createMapButton (css) {
+	function createMapButton ( css, id, title ) {
 		var last = $("#radar + div");
-		var next = $('<div><i class="fa '+css+' fa-2x"></i></div>').css({
+		var next = $('<div id="' +id+ '" title="' +title+ '"><i class="fa ' +css+ ' fa-2x"></i></div>').css( {
 			"z-index": last.css("z-index"),
 			"position": last.css("position"),
 			"cursor": last.css("cursor"),
 			"color": last.css("color"),
 			"right": last.css("right"),
 			"bottom": (parseInt(last.css("bottom")) + 40) + "px"
-		});
-		last.before(next);
+		} );
+		last.before( next );
 		return next;
 	}
 
@@ -75,21 +75,20 @@ const EXPLORE_COST = 25;
 								fleets_allow_explore.length * EXPLORE_COST + " кредитов. " +
 								"Разведать: ", fleets_allow_explore.length );*/
 				if ( fleets_allow_explore.length ){ //не слишком большие накладные на многократное вычисление размера массива?
-					var explore_all = confirm( "Разведать " + fleets_allow_explore.length +
-											  " систем за " +
-											  fleets_allow_explore.length * EXPLORE_COST + " кредитов?" );
+					var explore_all = confirm( 'Разведать ' + fleets_allow_explore.length +
+											  ' систем за ' +
+											  fleets_allow_explore.length * EXPLORE_COST + ' кредитов?' );
 					if ( explore_all ){
 						// поискать скорость работы foreach и for/while-shift
 						fleets_allow_explore.forEach( function( fleet, i, arr ) {
 							map.fleets[fleet.fleet_id].clickExplore();
 						});
-	                    // попробовать ф-ю из события onklick кнопки (или делать клик на карту для очистки)
-	                    setTimeout( function(){ document.getElementsByClassName("btn")[0].click(); }, 500 );
+	                    //waitFor( w, "$", function(){ document.getElementsByClassName('btn')[0].onclick(); } );
 					}
 					/*else { alert( "Массовая разведка отменена." ); }*/
 				}
 				else {
-					alert( "Нет готовых к разведке флотов." );
+					alert( 'Нет готовых к разведке флотов.' );
 				}
 
 			},
@@ -103,7 +102,7 @@ const EXPLORE_COST = 25;
 			},
 			init: function () {
 				var self = this;
-				this.button = createMapButton( "fa-wpexplorer" );
+				this.button = createMapButton( 'fa-wpexplorer', 'spacom-addons-exploreallgeo', 'Заказать массовую георазведку систем' );
 				this.button.on( "click", this.toggle.bind(this) );
 			}
 		};
