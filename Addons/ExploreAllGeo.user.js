@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::ExploreAllGeo
 // @namespace    http://tampermonkey.net/
-// @version      0.1.6
+// @version      0.1.7
 // @description  Geo-exploring auto buying
 // @author       dimio
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
-// @encoding 	 utf-8
+// @encoding     utf-8
 // @match        https://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
@@ -18,7 +18,7 @@ console.log( 'Spacom::Addons::ExploreAllGeo booted' );
 
 const EXPLORE_COST = 25;
 var EXPLORE_MESSAGE_OK = 'Разведка начата. Результат разведки будет доступен через 1 ход. Это стоило вам N кредитов.';
-var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для проведения разведки. Требуется ' +EXPLORE_COST+ ' кредитов.';
+var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для проведения разведки. Требуется ' +EXPLORE_COST+ ' кредитов. Было истрачено N кредитов.';
 
 (function (window, undefined) {
     window.unsafeWindow = window.unsafeWindow || window;
@@ -78,10 +78,10 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                         let explore_status = 1;
                         while ( fleets_allow_explore.length !== 0 && explore_status === 1 ){
                             let fleet_id = fleets_allow_explore.shift();
-
+                            // м.б. читать ост. кред. и сравн. с остаточн. ценой разв.?
                             var json_fleets = $.getJSON( APIUrl() + '&act=map&task=fleets&order=explore&fleet_id=' + fleet_id + '&format=json', {}, function ( json ) {
                                 if ( +json.explore.status !== 1 ){
-                                    w.showSmallMessage( EXPLORE_MESSAGE_ERR );
+                                    //w.showSmallMessage( EXPLORE_MESSAGE_ERR );
                                     explore_status = 0;
                                 }
                                 return json;
@@ -89,7 +89,7 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                         }
 
                         let timeoutID = w.setInterval( function(){
-                            if ( fleets_allow_explore.length === 0 && json_fleets.responseJSON ){
+                            if ( fleets_allow_explore.length === 0 && explore_status === 1 && json_fleets.responseJSON ){
                                 w.clearInterval( timeoutID );
                                 let message = EXPLORE_MESSAGE_OK.replace( 'N', explore_all_cost );
                                 w.showSmallMessage( message );
@@ -98,6 +98,16 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                                 map.drawFleets();
                                 w.parseAnswer( json_fleets.responseJSON, '' );
                             }
+                            else if ( explore_status === 0 && json_fleets.responseJSON ){
+                                w.clearInterval( timeoutID );
+                                let message = EXPLORE_MESSAGE_ERR.replace( 'N', +fleets_allow_explore.length * +EXPLORE_COST );
+                                w.showSmallMessage( message );
+                                map.removeAllFleets();
+                                map.jsonToFleets( json_fleets.responseJSON );
+                                map.drawFleets();
+                                w.parseAnswer( json_fleets.responseJSON, '' );
+                            }
+                            else { alert( 'Разведка не была проведена. Неизвестная ошибка' ); }
                         }, 0 );
 
                     }
