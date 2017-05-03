@@ -21,7 +21,6 @@ var EXPLORE_MESSAGE_OK = 'Разведка начата. Результат ра
 var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для проведения разведки. Требуется ' +EXPLORE_COST+ ' кредитов.';
 
 (function (window, undefined) {
-    // https://habrahabr.ru/post/129343/
     window.unsafeWindow = window.unsafeWindow || window;
     var w = unsafeWindow;
 
@@ -55,7 +54,7 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
 
             exploreAll: function () {
                 var fleets_allow_explore = [];
-                //var fleets_allow_explore = [ "468", "530", "707", "734", "790", "799", "840", "866", "898", "1034", "1103", "1192", "1287" ]; //DBG
+
                 var fleet;
                 var explore_all_cost;
 
@@ -63,49 +62,37 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                     fleet = map.fleets[i];
 
                     // $fleet->{'owner'} = value
-                    // $hash_name -ref_to_anonhash-> {key} = value
                     if ( fleet.owner == "own" && +fleet.allow_explore === 1 ) {
                         fleets_allow_explore.push( fleet.fleet_id );
                     }
                 }
 
                 explore_all_cost = +fleets_allow_explore.length * +EXPLORE_COST;
-                /*result = prompt( "Доступно систем для разведки: " + fleets_allow_explore.length + " за " +
-								fleets_allow_explore.length * EXPLORE_COST + " кредитов. " +
-								"Разведать: ", fleets_allow_explore.length );*/
-                if ( fleets_allow_explore.length ){ //не слишком большие накладные на многократное вычисление размера массива?
+
+                if ( fleets_allow_explore.length ){
                     var explore_all = confirm( 'Разведать ' + fleets_allow_explore.length +
                                               ' систем за ' +
                                               explore_all_cost + ' кредитов?' );
                     if ( explore_all ){
-                        // поискать скорость работы foreach и for/while-shift
-                        //fleets_allow_explore.forEach( function( fleet, i, arr ) {
 
                         let explore_status = 1;
-                        //outer:
                         while ( fleets_allow_explore.length !== 0 && explore_status === 1 ){
                             let fleet_id = fleets_allow_explore.shift();
 
                             var json_fleets = $.getJSON( APIUrl() + '&act=map&task=fleets&order=explore&fleet_id=' + fleet_id + '&format=json', {}, function ( json ) {
-                                //console.log( json );
                                 if ( +json.explore.status !== 1 ){
                                     w.showSmallMessage( EXPLORE_MESSAGE_ERR );
                                     explore_status = 0;
-                                    //break outer;
                                 }
                                 return json;
                             } );
-                            //break; //DBG
                         }
 
                         let timeoutID = w.setInterval( function(){
                             if ( fleets_allow_explore.length === 0 && json_fleets.responseJSON ){
-                            //if ( json_fleets.responseJSON ){ //DBG
                                 w.clearInterval( timeoutID );
                                 let message = EXPLORE_MESSAGE_OK.replace( 'N', explore_all_cost );
                                 w.showSmallMessage( message );
-                                //console.log( "json_fleets.responseJSON is:\n" );
-                                //console.log ( json_fleets.responseJSON );
                                 map.removeAllFleets();
                                 map.jsonToFleets( json_fleets.responseJSON );
                                 map.drawFleets();
