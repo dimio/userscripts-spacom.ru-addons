@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::ExploreAllGeo
 // @namespace    http://tampermonkey.net/
-// @version      0.1.7
+// @version      0.1.9
 // @description  Geo-exploring auto buying
 // @author       dimio
+// @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
 // @encoding     utf-8
 // @match        https://spacom.ru/?act=map
@@ -12,13 +13,17 @@
 // Based on "Spacom addons" by segrey (
 // https://greasyfork.org/en/scripts/27897-spacom-addons
 // https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
-
+//
+// TODO:	не всегда успевает обновить лист флотов - попр. решить;
+//			если над сист. неск. флотов готово к разв. - ? пров.
+//
 console.log( 'Spacom::Addons::ExploreAllGeo booted' );
 //console.log( GM_info );
 
 const EXPLORE_COST = 25;
 var EXPLORE_MESSAGE_OK = 'Разведка начата. Результат разведки будет доступен через 1 ход. Это стоило вам N кредитов.';
-var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для проведения разведки. Требуется ' +EXPLORE_COST+ ' кредитов. Было истрачено N кредитов.';
+var EXPLORE_MESSAGE_ERR = 'Разведка не окончена. Недостаточно денег для проведения разведки? Требуется ' +EXPLORE_COST+ ' кредитов. Было истрачено N кредитов. Перезагрузите страницу и проведите разведку вручную.';
+var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для проведения разведки. Требуется N кредитов, баланс - X кредитов.';
 
 (function (window, undefined) {
     window.unsafeWindow = window.unsafeWindow || window;
@@ -58,6 +63,8 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                 var fleet;
                 var explore_all_cost;
 
+				var money = +document.getElementsByClassName('turn money')[1].innerText.split('/')[0];
+
                 for ( let i in map.fleets ) {
                     fleet = map.fleets[i];
 
@@ -69,7 +76,14 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
 
                 explore_all_cost = +fleets_allow_explore.length * +EXPLORE_COST;
 
-                if ( fleets_allow_explore.length ){
+				if ( money < explore_all_cost ){
+					let message = EXPLORE_MESSAGE_ERR_MONEY.replace( 'N', explore_all_cost );
+					message = message.replace( 'X', money );
+					w.showSmallMessage( message );
+					return false;
+					// ? throw 'Not enough money';
+				}
+				else if ( fleets_allow_explore.length ){
                     var explore_all = confirm( 'Разведать ' + fleets_allow_explore.length +
                                               ' систем за ' +
                                               explore_all_cost + ' кредитов?' );
@@ -78,10 +92,8 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                         let explore_status = 1;
                         while ( fleets_allow_explore.length !== 0 && explore_status === 1 ){
                             let fleet_id = fleets_allow_explore.shift();
-                            // м.б. читать ост. кред. и сравн. с остаточн. ценой разв.?
                             var json_fleets = $.getJSON( APIUrl() + '&act=map&task=fleets&order=explore&fleet_id=' + fleet_id + '&format=json', {}, function ( json ) {
                                 if ( +json.explore.status !== 1 ){
-                                    //w.showSmallMessage( EXPLORE_MESSAGE_ERR );
                                     explore_status = 0;
                                 }
                                 return json;
@@ -98,23 +110,18 @@ var EXPLORE_MESSAGE_ERR = 'Недостаточно денег для прове
                                 map.drawFleets();
                                 w.parseAnswer( json_fleets.responseJSON, '' );
                             }
-                            else if ( explore_status === 0 && json_fleets.responseJSON ){
+                            else if ( explore_status === 0 ){
                                 w.clearInterval( timeoutID );
                                 let message = EXPLORE_MESSAGE_ERR.replace( 'N', +fleets_allow_explore.length * +EXPLORE_COST );
                                 w.showSmallMessage( message );
-                                map.removeAllFleets();
-                                map.jsonToFleets( json_fleets.responseJSON );
-                                map.drawFleets();
-                                w.parseAnswer( json_fleets.responseJSON, '' );
                             }
-                            else { alert( 'Разведка не была проведена. Неизвестная ошибка' ); }
                         }, 0 );
 
                     }
                     /*else { alert( "Массовая разведка отменена." ); }*/
                 }
                 else {
-                    alert( 'Нет готовых к разведке флотов.' );
+                    w.showSmallMessage( 'Нет готовых к разведке флотов.' );
                 }
 
             },
