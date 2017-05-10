@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::ExploreAllGeo
 // @namespace    http://tampermonkey.net/
-// @version      0.1.9
+// @version      0.2.1
 // @description  Geo-exploring auto buying
 // @author       dimio
 // @license      MIT
@@ -10,18 +10,15 @@
 // @match        https://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
-// Based on "Spacom addons" by segrey (
-// https://greasyfork.org/en/scripts/27897-spacom-addons
-// https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
 //
-// TODO:	не всегда успевает обновить лист флотов - попр. решить;
-//			если над сист. неск. флотов готово к разв. - ? пров.
+// TODO:    не всегда успевает обновить лист флотов - попр. решить;
+//          если над сист. неск. флотов готово к разв. - будет "ошибка" разведки или неверно посчитана её стоимость (больше фактической);
 //
 console.log( 'Spacom::Addons::ExploreAllGeo booted' );
 //console.log( GM_info );
 
 const EXPLORE_COST = 25;
-var EXPLORE_MESSAGE_OK = 'Разведка начата. Результат разведки будет доступен через 1 ход. Это стоило вам N кредитов.';
+var EXPLORE_MESSAGE_OK = 'Будет разведано систем: X. Результат разведки станет доступен через 1 ход. Это стоило вам N кредитов.';
 var EXPLORE_MESSAGE_ERR = 'Разведка не окончена. Недостаточно денег для проведения разведки? Требуется ' +EXPLORE_COST+ ' кредитов. Было истрачено N кредитов. Перезагрузите страницу и проведите разведку вручную.';
 var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для проведения разведки. Требуется N кредитов, баланс - X кредитов.';
 
@@ -63,7 +60,7 @@ var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для пр
                 var fleet;
                 var explore_all_cost;
 
-				var money = +document.getElementsByClassName('turn money')[1].innerText.split('/')[0];
+                var money = +document.getElementsByClassName('turn money')[1].innerText.split('/')[0];
 
                 for ( let i in map.fleets ) {
                     fleet = map.fleets[i];
@@ -74,17 +71,18 @@ var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для пр
                     }
                 }
 
-                explore_all_cost = +fleets_allow_explore.length * +EXPLORE_COST;
+                var fleets_allow_explore_cnt = fleets_allow_explore.length;
+                explore_all_cost = +fleets_allow_explore_cnt * +EXPLORE_COST;
 
-				if ( money < explore_all_cost ){
-					let message = EXPLORE_MESSAGE_ERR_MONEY.replace( 'N', explore_all_cost );
-					message = message.replace( 'X', money );
-					w.showSmallMessage( message );
-					return false;
-					// ? throw 'Not enough money';
-				}
-				else if ( fleets_allow_explore.length ){
-                    var explore_all = confirm( 'Разведать ' + fleets_allow_explore.length +
+                if ( money < explore_all_cost ){
+                    let message = EXPLORE_MESSAGE_ERR_MONEY.replace( 'N', explore_all_cost );
+                    message = message.replace( 'X', money );
+                    w.showSmallMessage( message );
+                    return false;
+                    // ? throw 'Not enough money';
+                }
+                else if ( fleets_allow_explore.length ){
+                    var explore_all = confirm( 'Разведать ' + fleets_allow_explore_cnt +
                                               ' систем за ' +
                                               explore_all_cost + ' кредитов?' );
                     if ( explore_all ){
@@ -104,6 +102,7 @@ var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для пр
                             if ( fleets_allow_explore.length === 0 && explore_status === 1 && json_fleets.responseJSON ){
                                 w.clearInterval( timeoutID );
                                 let message = EXPLORE_MESSAGE_OK.replace( 'N', explore_all_cost );
+                                message = message.replace( 'X', fleets_allow_explore_cnt );
                                 w.showSmallMessage( message );
                                 map.removeAllFleets();
                                 map.jsonToFleets( json_fleets.responseJSON );
@@ -135,7 +134,7 @@ var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для пр
             },
             init: function () {
                 var self = this;
-                this.button = createMapButton( 'fa-wpexplorer', 'spacom-addons-exploreallgeo', 'Заказать массовую георазведку систем' );
+                this.button = w.createMapButton( 'fa-wpexplorer', 'spacom-addons-exploreallgeo', 'Заказать массовую георазведку систем' );
                 this.button.on( "click", this.toggle.bind(this) );
             }
         };
