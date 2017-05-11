@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::ExploreAllGeo
 // @namespace    http://tampermonkey.net/
-// @version      0.2.1
+// @version      0.2.2
 // @description  Geo-exploring auto buying
 // @author       dimio
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
+// @supportURL   dimio.org, dimio@dimio.org
 // @encoding     utf-8
-// @match        https://spacom.ru/?act=map
+// @match        http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
 //
@@ -22,11 +23,11 @@ var EXPLORE_MESSAGE_OK = 'Будет разведано систем: X. Рез�
 var EXPLORE_MESSAGE_ERR = 'Разведка не окончена. Недостаточно денег для проведения разведки? Требуется ' +EXPLORE_COST+ ' кредитов. Было истрачено N кредитов. Перезагрузите страницу и проведите разведку вручную.';
 var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для проведения разведки. Требуется N кредитов, баланс - X кредитов.';
 
-(function (window, undefined) {
+(function ( window, undefined ) {
     window.unsafeWindow = window.unsafeWindow || window;
     var w = unsafeWindow;
 
-    if (w.self != w.top) {
+    if ( w.self != w.top ) {
         return;
     }
 
@@ -135,11 +136,11 @@ var EXPLORE_MESSAGE_ERR_MONEY = 'Недостаточно денег для пр
             init: function () {
                 var self = this;
                 this.button = w.createMapButton( 'fa-wpexplorer', 'spacom-addons-exploreallgeo', 'Заказать массовую георазведку систем' );
-                this.button.on( "click", this.toggle.bind(this) );
+                this.button.on( 'click', this.toggle.bind( this ) );
             }
         };
 
-        if (w.map) {
+        if ( w.map ) {
             Addons.ExploreAll.init();
         }
     }

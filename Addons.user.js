@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons
 // @namespace    http://tampermonkey.net/
-// @version      0.0.1
+// @version      0.0.2
 // @description  Include Spacom.ru::Addons library functions on spacom.ru
 // @author       dimio
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
+// @supportURL   dimio.org, dimio@dimio.org
 // @encoding     utf-8
 // @match        http*://spacom.ru/*
 // @run-at       document-start
@@ -31,7 +32,7 @@
         last.before( next );
         return next;
     };
-    
+
 } )(window);
 
 /*
