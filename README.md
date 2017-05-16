@@ -8,7 +8,7 @@
 
 ## Список дополненийs
 * [Spacom.ru::Addons::ExploreAllGeo](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/ExploreAllGeo.user.js) - заказ георазведки для всех флотов в один клик
-* [Spacom.ru::Addons::Fleets::Sort::Other](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/SortOther.user.js) - разделение вкладки чужих флотов на флоты игроков и пиратов, сортировка на вкладках чужих и пиратских флотов.
+* [Spacom.ru::Addons::Fleets::Sort](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/Sort.user.js) - разделение вкладки чужих флотов на флоты игроков и пиратов, сортировка на вкладках флотов.
 
 ## Требования
 * [Плагин Tampermonkey](http://tampermonkey.net/) для вашего браузера - по желанию
@@ -26,7 +26,7 @@
 
 ## List of Addons
 * [Spacom.ru::Addons::ExploreAllGeo](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/ExploreAllGeo.user.js) - Order geo-exploration for all fleets in one click
-* [Spacom.ru::Addons::Fleets::Sort::Other](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/SortOther.user.js) - Separation of the tabs of foreign fleets on the fleets of players and pirates, sorting on the tabs of foreign and pirate fleets.
+* [Spacom.ru::Addons::Fleets::Sort](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/Sort.user.js) - Separation of the tabs of foreign fleets on the fleets of players and pirates, sorting on the tabs of fleets.
 
 ## Requirements
 * [Tampermonkey plugin](http://tampermonkey.net/) for your browser - optional
