@@ -11,7 +11,7 @@
 // @match        http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
-console.log( 'Spacom.ru::Addons::FleetsSort::Other booted' );
+console.log( 'Spacom.ru::Addons::Fleets::Sort::Other booted' );
 
 (function( window, undefined ) {
     'use strict';
@@ -27,8 +27,9 @@ console.log( 'Spacom.ru::Addons::FleetsSort::Other booted' );
 
     var sortby_flag;
 
-    w.showOtherFleetsOnlyWith = function( owner, sortby, redraw ) {
-        if ( sub_menu == 'otherFleets_' +owner && redraw == '0' ) {
+    w.showOtherFleetsOnlyWith = function( owner, sortby, redraw ){
+        if ( sub_menu == 'otherFleets_' +owner && redraw == '0' ){
+        	sortby_flag = null;
             sub_menu = false;
             $("#items_list").html('');
         }
@@ -59,12 +60,14 @@ console.log( 'Spacom.ru::Addons::FleetsSort::Other booted' );
                     break;
                 case 'speed':
                     sorted_fleets.sort( sortFleetsBySpeed );
-                    // или пусть целые выводит без незначащих нулей (какие расходы на "украшательный" map)?
-                    sorted_fleets.map( function( fleet ){ fleet.fleet_speed = parseFloat(fleet.fleet_speed).toFixed(2); return fleet; } );
-                    console.log( sorted_fleets );
+                    //TODO: или пусть целые выводит без незначащих нулей (какие расходы на "украшательный" map)?
+                    sorted_fleets.map( function( fleet ){
+                    	fleet.fleet_speed = parseFloat( fleet.fleet_speed ).toFixed(2);
+                    	return fleet;
+                    } );
                     if ( sortby_flag == 'speed' ){
                         sorted_fleets.reverse();
-                        sortby_flag = undefined;
+                        sortby_flag = null;
                         break;
                     }
                     sortby_flag = 'speed';
@@ -99,14 +102,17 @@ console.log( 'Spacom.ru::Addons::FleetsSort::Other booted' );
 
                 var timerID = setInterval( function(){
                     let div_speed = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_speed")[0];
+                    //let div_owner = ;
                     if ( div_speed !== undefined ){
                         clearInterval( timerID );
-                        w.makeElementClickable( div_speed, 'fa-sort', 'Отсортировать по скорости', "showOtherFleetsOnlyWith('" +owner+ "', 'speed', '1')" );
+                        w.makeElementClickable( div_speed, 'fa-sort', 'Отсортировать по скорости',
+                        	"showOtherFleetsOnlyWith('" +owner+ "', 'speed', '1')" );
+                        //w.makeElementClickable( div_owner, 'fa-sort', 'Отсортировать по владельцу (id)',
+                        //	"showOtherFleetsOnlyWith('" +owner+ "', 'player_id', '1')" );
                     }
                 }, 0 );
             }
-            else
-            {
+            else {
                 $("#items_list").html('<div class="player_fleet_title">Нет видимых чужих флотов</div>');
             }
         }
@@ -133,8 +139,6 @@ console.log( 'Spacom.ru::Addons::FleetsSort::Other booted' );
 
 /*
 function fleetOrderByOwnerName(a, b) {
-	//a.weight = parseInt(a.weight);
-	//b.weight = parseInt(b.weight);
 	switch (a.owner) {
 		case "pirate":
 			switch (b.owner) {
