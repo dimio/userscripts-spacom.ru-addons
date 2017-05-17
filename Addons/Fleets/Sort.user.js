@@ -74,7 +74,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                         fleet.fleet_speed = parseFloat( fleet.fleet_speed ).toFixed(2);
                         return fleet;
                     } );
-                    if ( sortby_flag !== null ){
+                    if ( sortby_flag == sortby ){
                         sorted_fleets.reverse();
                         sortby_flag = null;
                         break;
@@ -84,7 +84,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                 case 'player_id':
                     if ( owner != 'other' ) { break; }
                     sorted_fleets.sort( sortFleetsByPlayerId );
-                    if ( sortby_flag !== null ){
+                    if ( sortby_flag == sortby ){
                         sorted_fleets.reverse();
                         sortby_flag = null;
                         break;
@@ -94,7 +94,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                 case 'state':
                     if ( owner != 'own' ){ sorted_fleets.sort( sortOtherFleetsByState ); }
                     else { sorted_fleets.sort( sortOwnFleetsByState ); }
-                    if ( sortby_flag !== null ){
+                    if ( sortby_flag == sortby ){
                         sorted_fleets.reverse();
                         sortby_flag = null;
                         //reverseFleetsArr( sorted_fleets );
@@ -104,7 +104,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                     break;
                 case 'type':
                     sorted_fleets.sort( sortFleetsByType );
-                    if ( sortby_flag !== null ){
+                    if ( sortby_flag == sortby ){
                         sorted_fleets.reverse();
                         sortby_flag = null;
                         break;
@@ -152,7 +152,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                         }
                         w.makeElementClickable( div_state, 'fa-sort', 'Отсортировать по состоянию',
                                                "showFleetsSortedBy('" +owner+ "', 'state', '1')" );
-                        //TODO: add a "filter: show only" button (filtering by state)
+                        //TODO: add a "filter: show only" button (filtering by state): fa-filter
                     }
                 }, 0 );
             }

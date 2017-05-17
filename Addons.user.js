@@ -31,7 +31,7 @@
 
     w.makeElementClickable = function ( elem, icon, title, callback ){
         let text = elem.innerText;
-        if ( icon ){ text = '<i class="fa ' +icon+ '"></i> ' +text; }
+        if ( icon ){ text = '<i class="fa ' +icon+ '" aria-hidden="true"></i> ' +text; }
         elem.innerHTML = '<a href="#" title="' +title+ '" onclick="' +callback+ '; return false;">' +text+ '</a>';
         return elem;
     };
