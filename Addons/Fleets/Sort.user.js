@@ -171,9 +171,16 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         allow_invasion
         allow_transfer
         */
-        if ( a.allow_station != '0' || b.allow_station != '0' ){
+        /*if ( a.allow_station != '0' || b.allow_station != '0' ){
             return -1;
-        }
+        }*/
+        /*
+        Положительное значение, если a > b,
+        Отрицательное значение, если a < b,
+        Если равны – можно 0, но вообще – не важно, что возвращать, их взаимный порядок не имеет значения.
+        */
+
+        console.log( a.allow_fly + " <> " + b.allow_fly );
 
         if ( a.allow_fly > b.allow_fly ){
             return 1;
