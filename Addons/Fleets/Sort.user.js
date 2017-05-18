@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::Sort
 // @namespace    http://tampermonkey.net/
-// @version      0.0.3
+// @version      0.0.4
 // @description  Add a sorting filtres for fleets tabs
 // @author       dimio
 // @license      MIT
@@ -12,7 +12,7 @@
 // @run-at       document-end
 // ==/UserScript==
 console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
-//TODO: фильтр для своих флотов с "показать только" и галка "исключить орбит. станции (с сохр. состояния в local storage)
+//TODO: фильтр для своих флотов с "показать только" и галка "исключить орбит. станции" (с сохр. состояния в local storage)
 
 (function( window, undefined ) {
     'use strict';
@@ -29,7 +29,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
     $('#navi > div:nth-child(2)').attr( 'onclick', "showFleetsSortedBy('own', 'weight', '0'); return false;" );
     w.createNaviBarButton( 'Пираты', "showFleetsSortedBy('pirate', 'weight', '0')" );
 
-    var sortby_flag;
+    var sortby_flag = null;
 
     w.showFleetsSortedBy = function( owner, sortby, redraw ){
         if ( sub_menu == 'otherFleets_' +owner && redraw == '0' ){
@@ -42,87 +42,15 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             map.clearInfo();
 
             var sorted_fleets = map.fleets.slice();
-
-            switch ( owner ) {
-                case 'own':
-                    sorted_fleets = sorted_fleets.filter( function( fleet ){
-                        return fleet.owner == 'own' && fleet.garrison != '1';
-                    } );
-                    break;
-                case 'pirate':
-                    sorted_fleets = sorted_fleets.filter( function( fleet ){
-                        return fleet.owner == 'pirate';
-                    } );
-                    break;
-                case 'other':
-                    sorted_fleets = sorted_fleets.filter( function( fleet ){
-                        return fleet.owner == 'other';
-                    } );
-                    break;
-                default:
-                    break;
-            }
-
-            switch ( sortby ) {
-                case 'weight':
-                    sorted_fleets.sort( w.fleetOrder );
-                    break;
-                case 'speed':
-                    sorted_fleets.sort( sortFleetsBySpeed );
-                    //TODO: или пусть целые выводит без незначащих нулей (какие расходы на "украшательный" map)?
-                    sorted_fleets.map( function( fleet ){
-                        fleet.fleet_speed = parseFloat( fleet.fleet_speed ).toFixed(2);
-                        return fleet;
-                    } );
-                    if ( sortby_flag == sortby ){
-                        sorted_fleets.reverse();
-                        sortby_flag = null;
-                        break;
-                    }
-                    sortby_flag = sortby;
-                    break;
-                case 'player_id':
-                    if ( owner != 'other' ) { break; }
-                    sorted_fleets.sort( sortFleetsByPlayerId );
-                    if ( sortby_flag == sortby ){
-                        sorted_fleets.reverse();
-                        sortby_flag = null;
-                        break;
-                    }
-                    sortby_flag = sortby;
-                    break;
-                case 'state':
-                    if ( owner != 'own' ){ sorted_fleets.sort( sortOtherFleetsByState ); }
-                    else { sorted_fleets.sort( sortOwnFleetsByState ); }
-                    if ( sortby_flag == sortby ){
-                        sorted_fleets.reverse();
-                        sortby_flag = null;
-                        //reverseFleetsArr( sorted_fleets );
-                        break;
-                    }
-                    sortby_flag = sortby;
-                    break;
-                case 'type':
-                    sorted_fleets.sort( sortFleetsByType );
-                    if ( sortby_flag == sortby ){
-                        sorted_fleets.reverse();
-                        sortby_flag = null;
-                        break;
-                    }
-                    sortby_flag = sortby;
-                    break;
-                default:
-                    sorted_fleets.sort( w.fleetOrder );
-                    break;
-            }
+            sorted_fleets = sortFleetsBy( owner, sortby, sorted_fleets );
 
             if ( ( sorted_fleets ) && ( sorted_fleets.filter( function(value){ return value !== undefined && value.garrison == '0'; } ).length > 0 ) )
             {
                 $("#items_list").append(tmpl("fleets_title", sorted_fleets));
-                for (var i in sorted_fleets) {
+                for ( let i in sorted_fleets ){
                     var fleet = sorted_fleets[i];
-                    if (fleet.garrison != 1) {
-                        map.showBlockFleet(fleet, fleet.owner);
+                    if ( fleet.garrison != 1 ){
+                        map.showBlockFleet( fleet, fleet.owner );
                     }
                 }
                 $("#items_list>>>[title],#items_list>>>>[title]").qtip({
@@ -136,87 +64,226 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                 });
 
                 var timerID = setInterval( function(){
-                    let div_speed = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_speed")[0];
-                    let div_owner = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_name")[0];
-                    let div_state = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_state")[0];
-                    let div_type = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_ico_list")[0];
-                    if ( div_speed !== undefined && div_owner !== undefined && div_state !== undefined && div_type !== undefined ){
+                    var divs = {};
+                    divs.speed = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_speed")[0];
+                    divs.player_name = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_name")[0];
+                    divs.state = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_state")[0];
+                    divs.type = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_ico_list")[0];
+
+                    if ( Object.keys(divs).length > 0 ){
                         clearInterval( timerID );
-                        w.makeElementClickable( div_speed, 'fa-sort', 'Отсортировать по скорости',
-                                               "showFleetsSortedBy('" +owner+ "', 'speed', '1')" );
-                        w.makeElementClickable( div_state, 'fa-sort', 'Отсортировать по типу',
-                                               "showFleetsSortedBy('" +owner+ "', 'state', '1')" );
-                        if ( owner == 'other' ){
-                            w.makeElementClickable( div_owner, 'fa-sort', 'Отсортировать по владельцу (id)',
-                                                   "showFleetsSortedBy('" +owner+ "', 'player_id', '1')" );
-                        }
-                        w.makeElementClickable( div_state, 'fa-sort', 'Отсортировать по состоянию',
-                                               "showFleetsSortedBy('" +owner+ "', 'state', '1')" );
-                        //TODO: add a "filter: show only" button (filtering by state): fa-filter
+                        makeClickableSortingIcons(divs, owner);
                     }
                 }, 0 );
             }
-            else {
+            else if ( owner != 'own' ) {
                 $("#items_list").html('<div class="player_fleet_title">Нет видимых чужих флотов</div>');
+            }
+            else {
+                $("#items_list").html('<div class="player_fleet_title">Нет собственных флотов</div>');
             }
         }
     };
 
-
-    function sortOwnFleetsByState( a, b ){
-        //TODO: add this:
-        /*
-        allow_bomb
-        allow_garrison
-        allow_invasion
-        allow_transfer
-        */
-        /*if ( a.allow_station != '0' || b.allow_station != '0' ){
-            return -1;
-        }*/
-        /*
-        Положительное значение, если a > b,
-        Отрицательное значение, если a < b,
-        Если равны – можно 0, но вообще – не важно, что возвращать, их взаимный порядок не имеет значения.
-        */
-
-        console.log( a.allow_fly + " <> " + b.allow_fly );
-
-        if ( a.allow_fly > b.allow_fly ){
-            return 1;
-        }
-        else if ( a.allow_fly < b.allow_fly ){
-            return -1;
-        }
-        else {
-            if ( a.allow_settle > b.allow_settle ){
-                return 1;
-            }
-            else if ( a.allow_settle < b.allow_settle ){
-                return -1;
-            }
-            else {
-                if ( a.allow_explore > b.allow_explore ){
-                    return 1;
-                }
-                else if ( a.allow_explore < b.allow_explore ){
-                    return -1;
-                }
-                else {
-                    if ( a.allow_station == b.allow_station ){
-                        return 0;
-                    }
-                    else if ( a.allow_station < b.allow_station ){
-                        return 1; //готовые к эксплуатации - поднять выше?
-                    }
-                }
-
+    function makeClickableSortingIcons(divs, owner){
+        //TODO: как вызывать w.makeElementClickable универсально (а именно - заголовок)
+        for ( let i in divs ){ // i = div type
+            let div = divs[i];
+            w.makeElementClickable( div, 'fa-sort', 'Отсортировать',
+                                   "showFleetsSortedBy('" +owner+ "', '" +i+ "', '1')" );
+            if ( owner == 'other' && i == 'player_name' ){ // а надо в принципе по id сортировать?
+                w.appendElemClickableIcon( div, 'fa-id-badge', 'Отсортировать по ID владельца',
+                                      "showFleetsSortedBy('" +owner+ "', 'player_id', '1')" );
             }
         }
+        //TODO: add a "filter: show only" button (filtering by state): fa-filter
+    }
+
+    function sortFleetsBy( owner, sortby, sorted_fleets ){
+        switch ( owner ) {
+            case 'own':
+                sorted_fleets = sorted_fleets.filter( function( fleet ){
+                    return fleet.owner == 'own' && fleet.garrison != '1';
+                } );
+                break;
+            case 'pirate':
+                sorted_fleets = sorted_fleets.filter( function( fleet ){
+                    return fleet.owner == 'pirate';
+                } );
+                break;
+            case 'other':
+                sorted_fleets = sorted_fleets.filter( function( fleet ){
+                    return fleet.owner == 'other';
+                } );
+                break;
+            default:
+                break;
+        }
+
+        switch ( sortby ) {
+            case 'weight':
+                sorted_fleets.sort( w.fleetOrder );
+                break;
+            case 'speed':
+                sorted_fleets.sort( sortFleetsBySpeed );
+                //TODO: или пусть целые выводит без незначащих нулей (какие расходы на "украшательный" map)?
+                sorted_fleets.map( function( fleet ){
+                    fleet.fleet_speed = parseFloat( fleet.fleet_speed ).toFixed(2);
+                    return fleet;
+                } );
+                if ( sortby_flag == sortby ){
+                    sorted_fleets.reverse();
+                    sortby_flag = null;
+                    break;
+                }
+                sortby_flag = sortby;
+                break;
+            case 'state':
+                if ( owner != 'own' ){ sorted_fleets.sort( sortOtherFleetsByState ); }
+                else { sorted_fleets.sort( sortOwnFleetsByState ); }
+                if ( sortby_flag === null ){
+                    sorted_fleets.reverse();
+                    sortby_flag = sortby;
+                    break;
+                }
+                sortby_flag = null;
+                console.log( sorted_fleets );
+                break;
+            case 'type':
+                sorted_fleets.sort( sortFleetsByType );
+                if ( sortby_flag == sortby ){
+                    sorted_fleets.reverse();
+                    sortby_flag = null;
+                    break;
+                }
+                sortby_flag = sortby;
+                break;
+            case 'player_name':
+                if ( owner != 'other' ) { break; }
+                sorted_fleets.sort( sortFleetsByPlayerName );
+                if ( sortby_flag == sortby ){
+                    sorted_fleets.reverse();
+                    sortby_flag = null;
+                    break;
+                }
+                sortby_flag = sortby;
+                break;
+            case 'player_id':
+                if ( owner != 'other' ) { break; }
+                sorted_fleets.sort( sortFleetsByPlayerId );
+                if ( sortby_flag == sortby ){
+                    sorted_fleets.reverse();
+                    sortby_flag = null;
+                    break;
+                }
+                sortby_flag = sortby;
+                break;
+            default:
+                sorted_fleets.sort( w.fleetOrder );
+                break;
+        }
+
+        return sorted_fleets;
+    }
+
+    function sortFleetsByPlayerName( a, b ){
+        let a_cmp = a.player_name.toUpperCase();
+        let b_cmp = b.player_name.toUpperCase();
+
+        return ( a_cmp < b_cmp ) ? -1 : ( a_cmp > b_cmp ) ? 1 : 0;
     }
 
     function sortFleetsByType( a, b ){
-        return 0; //dummy
+        let a_cmp = a.ico.toUpperCase();
+        let b_cmp = b.ico.toUpperCase();
+
+        return ( a_cmp < b_cmp ) ? -1 : ( a_cmp > b_cmp ) ? 1 : 0;
+    }
+
+    function sortOwnFleetsByState( a, b ){
+        /* Order:
+        allow_bomb
+        allow_invasion
+        allow_settle
+        allow_explore
+        allow_fly
+        allow_transfer
+        allow_garrison
+        allow_station
+        start_turn
+        */
+
+        if ( a.allow_bomb > b.allow_bomb ){
+            return 1;
+        }
+        else if ( a.allow_bomb < b.allow_bomb ){
+            return -1;
+        }
+        else {
+            if ( a.allow_invasion > b.allow_invasion ){
+                return 1;
+            }
+            else if ( a.allow_invasion < b.allow_invasion ){
+                return -1;
+            }
+            else {
+                if ( a.allow_settle > b.allow_settle ){
+                    return 1;
+                }
+                else if ( a.allow_settle < b.allow_settle ){
+                    return -1;
+                }
+                else {
+                    if ( a.allow_explore > b.allow_explore ){
+                        return 1;
+                    }
+                    else if ( a.allow_explore < b.allow_explore ){
+                        return -1;
+                    }
+                    else {
+                        if ( a.allow_fly > b.allow_fly ){
+                            return 1;
+                        }
+                        else if ( a.allow_fly < b.allow_fly ){
+                            return -1;
+                        }
+                        else {
+                            if ( a.allow_transfer > b.allow_transfer ){
+                                return 1;
+                            }
+                            else if ( a.allow_transfer < b.allow_transfer ){
+                                return -1;
+                            }
+                            else {
+                                if ( a.allow_garrison > b.allow_garrison ){
+                                    return 1;
+                                }
+                                else if ( a.allow_garrison < b.allow_garrison ){
+                                    return -1;
+                                }
+                                else {
+                                    if ( a.allow_station > b.allow_station ){
+                                        return -1;  // изучает аномалию - опускаем ниже
+                                    }
+                                    else if ( a.allow_station < b.allow_station ){
+                                        return 1; // готова изучить или не станция - поднять
+                                    }
+                                    else {
+                                        if ( a.start_turn > b.start_turn ){
+                                            return -1;  // будет дольше в полёте - опустить
+                                        }
+                                        else if ( a.start_turn < b.start_turn ){
+                                            return 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
     }
 
     function sortOtherFleetsByState( a, b ) {
