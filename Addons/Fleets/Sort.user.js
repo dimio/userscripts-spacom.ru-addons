@@ -12,7 +12,10 @@
 // @run-at       document-end
 // ==/UserScript==
 console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
-//TODO: фильтр для своих флотов с "показать только" и галка "исключить орбит. станции" (с сохр. состояния в local storage)
+/*TODO:
+[] для своих флотов - галка "исключить орбит. станции" (с сохр. состояния в local storage)
+[] откл. сорт. по скорости?
+*/
 
 (function( window, undefined ) {
     'use strict';
@@ -26,21 +29,21 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
     var sortby_last = null;
     var sortby_flag = null;
     var filtered_fleets = [];
-    // в "главные" кнопки флотов - передавать sortby_last, в кнопки сортировки - null
-    // тогда при переключении по окнам флотов будет сохр. сортировка, а при новой сортировке - не мешать ей
 
+    //списком аргументы передавать?
     // so:
-    document.getElementsByClassName('navi_menu_item')[2].setAttribute( 'onclick', "showFleets('other', 'fleet', " +null+ ", " +null+ ", '" +sortby_last+ "', " +null+ "); return false;" );
+    document.getElementsByClassName('navi_menu_item')[2].setAttribute( 'onclick', "showFleets('other', 'fleet', " +null+ ", " +null+ ", '" +sortby_last+ "', " +null+ ", " +null+ "); return false;" );
     // or so (jquery):
-    $('#navi > div:nth-child(2)').attr( 'onclick', "showFleets('own', 'fleet', " +null+ ", "  +null+ ", '" +sortby_last+ "', " +null+ "); return false;" );
-    w.createNaviBarButton( 'Гарнизон', 1, "showFleets('own', 'garrison', " +null+ ", " +null+ ", '" +sortby_last+ "', " +null+ ")" );
-    w.createNaviBarButton( 'Пираты', 4, "showFleets('pirate', 'fleet', " +null+ ", " +null+ ", '" +sortby_last+ "', " +null+ ")" );
+    $('#navi > div:nth-child(2)').attr( 'onclick', "showFleets('own', 'fleet', " +null+ ", "  +null+ ", '" +sortby_last+ "', " +null+ ", " +null+ "); return false;" );
+    w.createNaviBarButton( 'Гарнизон', 1, "showFleets('own', 'garrison', " +null+ ", " +null+ ", '" +sortby_last+ "', " +null+ ", " +null+ ")" );
+    w.createNaviBarButton( 'Пираты', 4, "showFleets('pirate', 'fleet', " +null+ ", " +null+ ", '" +sortby_last+ "', " +null+ ", " +null+ ")" );
 
 
-    w.showFleets = function( owner, fleet_type, sortby, filterby, sortby_last, redraw ){
+    w.showFleets = function( owner, fleet_type, sortby, filterby, sortby_last, redraw, filter_key ){
         if ( sub_menu == 'fleets_' +owner+ '_' +fleet_type && redraw === null ){
             sortby_last = null;
             sortby_flag = null;
+            filter_key = null;
             filtered_fleets.length = 0; //purge arr
             sub_menu = false;
             $("#items_list").html('');
@@ -62,40 +65,39 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             if ( sortby_last !== null ){
                 sortby = sortby_last;
             }
+            if ( filtered_fleets.length > 0 && redraw !== null ){
+                sorted_fleets = filtered_fleets;
+            }
 
             if ( sortby === null && filterby === null ){
                 sorted_fleets.sort( w.fleetOrder );
             }
             else if ( sortby !== null && filterby === null ){
-                if ( filtered_fleets.length > 0 ){
-                    sorted_fleets = filtered_fleets;
-                }
                 sorted_fleets = sortFleetsBy( owner, sortby, sorted_fleets );
             }
-            else if ( sortby === null && filterby !== null ){
-                let filter_keys = {};
-                for ( let i in sorted_fleets ){
-                    // $keys{$key->$sorted_fleets->[$fleet]->{$filterby}} = $player_name
-                    filter_keys[ sorted_fleets[i][filterby] ] = sorted_fleets[i][filterby];
+            else if ( filterby !== null ){ //sortby === null &&
+                if ( filter_key === null ){
+                    let filter_keys = {};
+                    for ( let i in sorted_fleets ){
+                        // $keys{$key->$sorted_fleets->[$fleet]->{$filterby}} = $player_name
+                        filter_keys[ sorted_fleets[i][filterby] ] = sorted_fleets[i][filterby];
+                    }
+                    if ( Object.keys( filter_keys ).length > 1 ){
+                        showModalFilterList( filter_keys, owner, fleet_type, sortby, filterby );
+                    }
+                    else {
+                        let message = 'Фильтрация по единственному параметру невозможна. ';
+                        message += 'Для сброса фильтров закройте и откройте заново текущую вкладку флотов.';
+                        w.showSmallMessage( message );
+                        sub_menu = false;
+                        //$("#items_list").html('');
+                    }
                 }
-                console.log( filter_keys );
-
-                if ( Object.keys( filter_keys ).length > 1 ){
-                    //показать меню кнопки
-                    //let filter_key = 'AVL1'; // dbg
-                    let filter_key = showFilterList( filter_keys );
-                    console.log( 'filter key: ' +filter_key );
-                    //sorted_fleets = filterFleetsBy( owner, filterby, sorted_fleets );
+                else {
                     sorted_fleets = sorted_fleets.filter( function( fleet ){
-                        //console.log( fleet );
-                        //console.log( filterby );
-                        //console.log( fleet[filterby] );
                         return fleet[filterby] == filter_key;
                     } );
                     filtered_fleets = sorted_fleets.slice();
-                }
-                else {
-                    w.showSmallMessage( 'Нет параметров для фильтрации' );
                 }
             }
             else { console.error( 'sortby & filterby not defined' ); }
@@ -141,49 +143,24 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         }
     };
 
-    function showFilterList( filter_keys ){
-        let sorted_filter_keys = Object.keys( filter_keys ).sort( sortAlphabetically );
+    function showModalFilterList( arr, owner, fleet_type, sortby, filterby ){
+        let sorted_list = Object.keys( arr ).sort( sortAlphabetically );
+        let id = 'fl_filter';
 
-        let message = 'Отфильтровать по:</br><select name="filter">';
-        for ( let i in sorted_filter_keys ){
-            message += '<option>' +sorted_filter_keys[i]+ '</option>';
+        let message = 'Отфильтровать по:</br><select id="' +id+ '">';
+        for ( let i in sorted_list ){
+            message += '<option>' +sorted_list[i]+ '</option>';
         }
         message += '</select>';
 
         w.showSmallMessage( message );
 
-        /*let timerID = setInterval( function(){
-            let ok_btn = $('#data_modal > button');
-
-            if ( Object.keys(divs).length > 0 ){
-                clearInterval( timerID );
-                makeClickableSortingIcons( divs, owner, fleet_type );
-                makeClickableFilteringIcons( divs, owner, fleet_type );
-            }
-        }, 0 );*/
-
-        //http://www.webnotes.com.ua/index.php/archives/699
-        let ok_btn = $('#data_modal > button'); //TODO:: обернуть в setInterval, если не будет корректно работать
-        ok_btn.attr( 'onclick', w.okBtnOnClickReturnValue( $("select#data_modal > select") ) );
-
-        //let selected = ok_btn.attr( 'onclick', w.okBtnOnClickReturnValue( $("select#data_modal > select") ) );
-
-        //let selected = ok_btn.attr('onclick', function(){
-
-        /*let selected = $('#data_modal > select').change( function(){
-                $(this).val();
-            } );
-            return selected;*/
-        //} );
-
-        console.log( ok_btn );
-        //console.log( selected );
-        /*$('#selectYear').change(function() {
-            alert(this.value);
-        });*/
-        //#data_modal > button
-        //return selected;
-        return;
+        $('#data_modal > select').change( function( selected ){
+            var select = $(this).val();
+            $("#data_modal > button").attr( 'onclick',
+                                           "showFleets('" +owner+ "', '" +fleet_type+ "', '" +sortby+ "', '" +filterby+ "', " +null+ ", '1', '" +select+ "'); $.modal.close();" );
+        } )
+            .change();
     }
 
     function makeClickableFilteringIcons(divs, owner, fleet_type){
@@ -192,7 +169,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             if ( i == 'player_name' && owner != 'other' ){ continue; }
 
             w.appendElemClickableIcon( div, 'fa-filter', 'filter-by-' +i, 'Отфильтровать',
-                                      "showFleets('" +owner+ "', '" +fleet_type+ "', " +null+ ", '" +i+ "', " +null+ ", '1')" );
+                                      "showFleets('" +owner+ "', '" +fleet_type+ "', " +null+ ", '" +i+ "', " +null+ ", '1', " +null+ ")" );
 
         }
     }
@@ -202,10 +179,10 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         for ( let i in divs ){ // i = div type
             let div = divs[i];
             w.makeElementClickable( div, 'fa-sort', 'Отсортировать',
-                                   "showFleets('" +owner+ "', '" +fleet_type+ "','" +i+ "', " +null+ ", " +null+ ", '1')" );
+                                   "showFleets('" +owner+ "', '" +fleet_type+ "','" +i+ "', " +null+ ", " +null+ ", '1', " +null+ ")" );
             if ( owner == 'other' && i == 'player_name' ){ // а надо в принципе по id сортировать?
                 w.appendElemClickableIcon( div, 'fa-id-badge', 'sort-by-' +i, 'Отсортировать по ID владельца',
-                                          "showFleets('" +owner+ "', '" +fleet_type+ "','player_id', " +null+ ", " +null+ ", '1')" );
+                                          "showFleets('" +owner+ "', '" +fleet_type+ "','player_id', " +null+ ", " +null+ ", '1', " +null+ ")" );
             }
         }
     }
@@ -275,7 +252,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
     }
 
     function sortOwnFleetsByState( a, b ){
-        //TODO: можно переделать черещ sortNumerically и тернарный оператор?
+        //TODO: можно переделать через sortNumerically и тернарный оператор?
         /* Order:
         allow_bomb
         allow_invasion

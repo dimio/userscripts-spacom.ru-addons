@@ -54,7 +54,6 @@ console.log( 'Spacom.ru::Addons booted' );
     };
 
     w.createNaviBarButton = function( name, last_el_num, callback ) {
-        //var last = $("#navi > div:nth-child(3)");
         let last = $("#navi > div:nth-child(" +last_el_num+ ")");
 
         $(last).parent().css( {
