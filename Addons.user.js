@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons
 // @namespace    http://tampermonkey.net/
-// @version      0.0.4
+// @version      0.0.5
 // @description  Include Spacom.ru::Addons library functions on spacom.ru
 // @author       dimio
 // @license      MIT
@@ -14,6 +14,7 @@
 // Based on "Spacom addons" by segrey (
 // https://greasyfork.org/en/scripts/27897-spacom-addons
 // https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
+console.log( 'Spacom.ru::Addons booted' );
 
 (function( window, undefined ) {
     'use strict';
@@ -29,12 +30,16 @@
         }, 0 );
     };
 
-    w.appendElemClickableIcon = function ( elem, icon, title, callback ){
+    w.okBtnOnClickReturnValue = function ( elem ){
+        return elem.val();
+    };
+
+    w.appendElemClickableIcon = function ( elem, icon, css_name, title, callback ){
         let clickable_icon = document.createElement( 'a' );
         clickable_icon.href = '#';
         clickable_icon.title = title;
         clickable_icon.setAttribute( 'onclick', callback+ '; return false;' );
-        clickable_icon.innerHTML = ' <i class="fa ' +icon+ '"></i></a>';
+        clickable_icon.innerHTML = ' <i class="fa ' +icon+ '" id="' +css_name+ '"></i></a>';
         elem.appendChild( clickable_icon );
 
         return elem;
@@ -48,9 +53,24 @@
         return elem;
     };
 
+    w.createNaviBarButton = function( name, last_el_num, callback ) {
+        //var last = $("#navi > div:nth-child(3)");
+        let last = $("#navi > div:nth-child(" +last_el_num+ ")");
+
+        $(last).parent().css( {
+            "width": (parseInt( $(last).parent().css("width") ) + 15) +"px",
+        } );
+
+        let next = $('<div class="' +last.attr("class")+ '" onclick="' +callback+ '; return false;"><a href="#">' +name+ '</a></div>');
+
+        last.after( next );
+
+        return next;
+    };
+
     w.createMapButton = function( css, id, title ) {
-        var last = $("#radar + div");
-        var next = $('<div id="' +id+ '" title="' +title+ '"><i class="fa ' +css+ ' fa-2x"></i></div>').css( {
+        let last = $("#radar + div");
+        let next = $('<div id="' +id+ '" title="' +title+ '"><i class="fa ' +css+ ' fa-2x"></i></div>').css( {
             "z-index": last.css("z-index"),
             "position": last.css("position"),
             "cursor": last.css("cursor"),
@@ -59,23 +79,6 @@
             "bottom": (parseInt(last.css("bottom")) + 40) + "px"
         } );
         last.before( next );
-
-        return next;
-    };
-
-    w.createNaviBarButton = function( name, callback ) {
-        var last = $("#navi > div:nth-child(3)");
-        var next = $('<div class="navi_menu_item" onclick="' +callback+ '; return false;">\
-<a href="#">' +name+ '</a></div>').css( {
-            "z-index": last.css("z-index"),
-            "position": last.css("position"),
-            "cursor": last.css("cursor"),
-            "color": last.css("color"),
-            "right": last.css("right"),
-            "bottom": last.css("bottom"),
-            //"bottom": (parseInt(last.css("bottom")) + 40) + "px"
-        } );
-        last.after( next );
 
         return next;
     };
