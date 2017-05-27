@@ -2,7 +2,7 @@
 // @name         Spacom.ru::Addons
 // @namespace    http://tampermonkey.net/
 // @version      0.0.5
-// @description  Include Spacom.ru::Addons library functions on spacom.ru
+// @description  Provide Spacom.ru::Addons library functions on spacom.ru
 // @author       dimio
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
@@ -57,11 +57,10 @@ console.log( 'Spacom.ru::Addons booted' );
         let last = $("#navi > div:nth-child(" +last_el_num+ ")");
 
         $(last).parent().css( {
-            "width": (parseInt( $(last).parent().css("width") ) + 15) +"px",
+            "width": (parseInt( $(last).parent().css("width"), 10 ) + 15) +"px",
         } );
 
         let next = $('<div class="' +last.attr("class")+ '" onclick="' +callback+ '; return false;"><a href="#">' +name+ '</a></div>');
-
         last.after( next );
 
         return next;
@@ -82,9 +81,43 @@ console.log( 'Spacom.ru::Addons booted' );
         return next;
     };
 
+    w.sortAlphabetically = function ( a, b ){
+        //too simply sorting
+        //TODO: comare strings char-by-char
+        let a_cmp = a.toUpperCase();
+        let b_cmp = b.toUpperCase();
+
+        return ( a_cmp < b_cmp ) ? -1 : ( a_cmp > b_cmp ) ? 1 : 0;
+    };
+
+    w.sortNumerically = function ( a, b ){
+        a = parseFloat( a, 10 );
+        b = parseFloat( b, 10 );
+
+        return a - b;
+    };
+
+    w.isArrElemDefined = function ( value ){
+        if ( isVariableDefined( value ) ){
+            return value;
+        }
+    };
+
+    w.isVariableDefined = function ( value ){
+        if ( typeof value !== undefined || value !== null ){
+            return true; //retrun value >>> 0
+        }
+        return false;
+    };
+
 } )( window );
 
-
+/*
+    w.isDefined = function ( value ){
+        // отриц. знач. для if (не критично, но...)
+        return value !== undefined || value !== null;
+    };
+*/
 
 /*
     w.appendDivClickableIcon = function ( elem, icon, title, callback ){
