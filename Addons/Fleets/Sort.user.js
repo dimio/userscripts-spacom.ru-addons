@@ -13,11 +13,12 @@
 // ==/UserScript==
 console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
 /*TODO:
-[ ] добавить фильтрацию (по владельцу или имени, по типу, по состоянию)
+[x] добавить фильтрацию (по владельцу или имени, по типу, по состоянию)
 [ ] для своих флотов - галка "исключить орбит. станции" (с сохр. состояния в local storage)
 [х] откл. сорт. по скорости?
 [x] если "пираты" (или "чужие", отсортир. по владельцу) - вместо владельца сорт. по назв. флота
-[x] сохранять состояние сортировки, если вкладка флота не закрыта специально (напр. - была нажата "обзор" или "лететь") - пока глючно
+[x] сохранять состояние сортировки, если вкладка флота не закрыта специально (напр. - была нажата "обзор" или "лететь")
+[ ] при сохр. состояния сортировки для своих флотов - посмотреть, как менять "лететь" на "отмена" для отправленных в полет из-под фильтра
 */
 
 (function( window, undefined ) {
@@ -29,25 +30,29 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         return;
     }
 
+    // сделать настройки фильтрации в глобальном хэше (для простоты восприятия)
+    // и передавать в ф-и href на них
     var sortby_last = null;
     var sortby_flag = null;
     var filterby_last = null;
     var filter_key = null;
     var filtered_fleets = [];
     var sorted_fleets =[];
+    w.fly_flag = null;
 
     //null можно не передавать, будет undefined, но с null наглядней
     // so:
-    document.getElementsByClassName('navi_menu_item')[2].setAttribute( 'onclick', "showFleets('other', 'fleet', " +null+ ", " +null+ "); return false;" );
+    document.getElementsByClassName('navi_menu_item')[2].setAttribute( 'onclick', "showFleets('other', 'fleet', " +
+                                                                      null+ ", 'weight'); return false;" );
     // or so (jquery):
-    $('#navi > div:nth-child(2)').attr( 'onclick', "showFleets('own', 'fleet', " +null+ ", " +null+ "); return false;" );
-    w.createNaviBarButton( 'Гарнизон', 1, "showFleets('own', 'garrison', " +null+ ", " +null+ ")" );
-    w.createNaviBarButton( 'Пираты', 4, "showFleets('pirate', 'fleet', " +null+ ", " +null+ ")" );
+    $('#navi > div:nth-child(2)').attr( 'onclick', "showFleets('own', 'fleet', " +null+ ", 'weight'); return false;" );
+    w.createNaviBarButton( 'Гарнизон', 1, "showFleets('own', 'garrison', " +null+ ", 'weight')" );
+    w.createNaviBarButton( 'Пираты', 4, "showFleets('pirate', 'fleet', " +null+ ", 'weight')" );
 
-    // сделать настройки фильтрации в глобальном хэше (для простоты восприятия)
     function purgeFleetFilters(){
         sortby_last = null;
         sortby_flag = null;
+        filterby_last = null;
         filter_key = null;
         filtered_fleets.length = 0; //purge arr
     }
@@ -66,7 +71,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             purgeFleetFilters();
             sorted_fleets = getFleets( owner, fleet_type );
             // и отсортировать по умолчанию (ф-я из map.js)
-            sorted_fleets = sortFleetsBy( sorted_fleets );
+            sorted_fleets = sortFleetsBy( sorted_fleets, owner, sortby, filterby );
             drawFleetsTab( owner, fleet_type, sortby, filterby, sorted_fleets );
         }
         // вкладка флотов открыта
@@ -74,19 +79,25 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             map.clearInfo();
 
             // если был применен фильтр и он не сброшен - показать его результаты и обрабатывать их для сортировки
-            if ( filtered_fleets.filter( w.isArrElemDefined ).length > 0 && redraw !== null && w.isVariableDefined( filterby ) ){
+            //if ( filtered_fleets.filter( w.isArrElemDefined ).length > 0 && redraw !== null && w.isVariableDefined( filterby ) ){
+            if ( filtered_fleets.filter( w.isArrElemDefined ).length > 0 && w.isVariableDefined( filterby_last ) ){
                 sorted_fleets = filtered_fleets;
             }
-            // если окно флотов закрыто автоматически (например - кн. "лететь") - сохранить фильтрацию
-            else if ( sub_menu === false && ( sortby_last || filterby_last ) ){
-                sortby = sortby_last;
-                sortby_last = null;
-                sortby_flag = null; //? проверить > не сортировать в обратном порядке
-            }
-            // или отсортировать по умолч. флоты по соотв. владельцу (гарнизон, свои, чужие, пираты)
             else {
                 sorted_fleets = getFleets( owner, fleet_type );
-                sorted_fleets = sortFleetsBy( sorted_fleets );
+            }
+
+            // если окно флотов закрыто автоматически (например - кн. "лететь") - сохранить фильтрацию
+            // запоминать id флота и менять ему кнопку на "отмена"? а убирать отправленные - повторной
+            // ручной фильтрацией по статусу?
+            if ( sub_menu === false && ( sortby_last || filterby_last ) ){
+                sortby = sortby_last;
+                sortby_last = null;
+                sortby_flag = null;
+                /*if ( w.isVariableDefined( w.fly_flag ) ){
+                    sorted_fleets = sorted_fleets.filter( returnFleetsAllowFly );
+                    w.toggleFlag( w.fly_flag );
+                }*/
             }
 
             // sorting selected
@@ -103,6 +114,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             }
             // show fleets sorting by default
             else {
+                sorted_fleets = sortFleetsBy( sorted_fleets, owner, sortby, filterby );
                 drawFleetsTab( owner, fleet_type, sortby, filterby, sorted_fleets );
             }
 
@@ -110,22 +122,23 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         }
     };
 
+    function returnFleetsAllowFly( fleet ){
+        return +map.fleets[fleet.fleet_id].allow_fly === 1;
+    }
+
     function filterFleetsBy( owner, fleet_type, sortby, filterby, filter_key ){
         let filter_keys = {};
         if ( filter_key === null ){
-            // сортировка по игроку - сбрасывает отфильтрованное
+            // фильтрация по игроку - сбрасывает отфильтрованное ранее
             if ( filterby == 'player_name' ){
                 sorted_fleets = getFleets( owner, fleet_type );
             }
-            /*
-            for..in loops iterate over the entire prototype chain,
-            which is virtually never what you want. Use Object.{keys,values,entries},
-            and iterate over the resulting array no restricted syntax
-            */
             for ( let i in sorted_fleets ){
-                // хэш: имя ключа == параметру фильрации
-                //filter_keys[ sorted_fleets[i][filterby] ] = sorted_fleets[i][filterby];
-                filter_keys[ sorted_fleets[i][filterby] ] = filterby;
+                if ( sorted_fleets.hasOwnProperty(i) ){
+                    // хэш: имя ключа == параметру фильрации
+                    //filter_keys[ sorted_fleets[i][filterby] ] = sorted_fleets[i][filterby];
+                    filter_keys[ sorted_fleets[i][filterby] ] = filterby;
+                }
             }
             if ( Object.keys( filter_keys ).filter( w.isArrElemDefined ).length > 0 ){
                 showModalFilterList( filter_keys, owner, fleet_type, sortby, filterby );
@@ -162,8 +175,10 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         if ( sorted_fleets && sorted_fleets.filter( w.isArrElemDefined ).length > 0 ){
             $("#items_list").append(tmpl("fleets_title", sorted_fleets));
             for ( let i in sorted_fleets ){
-                let fleet = sorted_fleets[i];
-                map.showBlockFleet( fleet, fleet.owner );
+                if ( w.isVariableDefined(i) ){
+                    let fleet = sorted_fleets[i];
+                    map.showBlockFleet( fleet, fleet.owner );
+                }
             }
             $("#items_list>>>[title],#items_list>>>>[title]").qtip({
                 position: {
@@ -176,19 +191,22 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             });
 
             let timerID = setInterval( function(){
-                let divs = {};
-                divs.fleet_speed = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_speed")[0];
-                divs.player_name = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_name")[0];
-                divs.turn = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_state")[0];
-                divs.ico = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_ico_list")[0];
-                divs.stat = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_stat")[0];
-
+                let divs = getNaviDivs();
                 if ( Object.keys( divs ).filter( w.isArrElemDefined ).length > 0 ){
                     clearInterval( timerID );
                     makeClickableSortingIcons( divs, owner, fleet_type, filterby );
                     makeClickableFilteringIcons( divs, owner, fleet_type, sortby );
                 }
             }, 0 );
+            /*if ( owner === 'own' ){
+                $(".col-xs-4.col-md-2.fleet_actions :button i.fa.fa-rocket").parent().each(
+                    function(i, elem){
+                        let last_onclick = $(elem).attr('onclick');
+                        let new_onclick = `toggleFlag( ${w.fly_flag} )`+ '; ' +last_onclick;
+                        $(elem).attr('onclick', new_onclick );
+                    }
+                );
+            }*/
         }
         else if ( owner != 'own' ) {
             $("#items_list").html('<div class="player_fleet_title">Нет видимых чужих флотов</div>');
@@ -196,6 +214,17 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         else {
             $("#items_list").html('<div class="player_fleet_title">Нет собственных флотов</div>');
         }
+    }
+
+    function getNaviDivs(){
+        let divs = {};
+        divs.fleet_speed = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_speed")[0];
+        divs.player_name = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_name")[0];
+        divs.turn = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_state")[0];
+        divs.ico = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_ico_list")[0];
+        divs.stat = $("#items_list > div.row.player_fleet_title > div.col-xs-4.col-md-2.fleet_stat")[0];
+
+        return divs;
     }
 
     function sortFleetsBy( sorted_fleets, owner, sortby, filterby ){
@@ -207,7 +236,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                     return fleet;
                 } );
                 break;
-            case 'turn': //by state
+            case 'turn': // by state
                 if ( owner != 'own' ){ sorted_fleets.sort( sortOtherFleetsByState ); }
                 else { sorted_fleets.sort( sortOwnFleetsByState ); }
                 break;
@@ -232,16 +261,19 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             case 'stat':
                 sorted_fleets.sort( sortFleetsByStat );
                 break;
+            case 'weight':
+                sorted_fleets.sort( w.fleetOrder );
+                break;
             default:
                 sorted_fleets.sort( w.fleetOrder );
                 break;
         }
 
-        if ( sortby_flag === sortby ){
+        if ( w.isVariableDefined( sortby_flag ) && sortby_flag === sortby ){
             sorted_fleets.reverse();
             sortby_flag = null;
         }
-        else if ( w.isVariableDefined( sortby ) ) {//здесь хрень (сорт при перекл. вкладок "подвисает")
+        else if ( w.isVariableDefined( sortby ) ) {
             sortby_flag = sortby;
         }
         else {
@@ -282,7 +314,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
     function makeClickableFilteringIcons( divs, owner, fleet_type, sortby ){
         for ( let i in divs ){ // i = div type
             let div = divs[i];
-            if ( i == 'fleet_speed' || i == 'player_name' && owner != 'other' ){
+            if ( i == 'fleet_speed' || i == 'stat' || ( i == 'player_name' && owner != 'other' ) ){
                 continue;
             }
             if ( fleet_type == 'garrison' && i == 'turn' ){
@@ -331,6 +363,11 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
         }
 
         return sorted_fleets;
+    }
+
+    function sortFleetsByStat( a, b ){
+        // добавить сорт. по военным параметрам (поврежденные флоты - наверх)
+        return w.sortNumerically( a.health, b.health );
     }
 
     function sortOwnFleetsByState( a, b ){
@@ -400,7 +437,7 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
                                         return -1;  // изучает аномалию - опускаем ниже
                                     }
                                     else if ( a.allow_station < b.allow_station ){
-                                        return 1; // готова изучить или не станция - поднять
+                                        return 1; // готов изучить или не станция - поднять
                                     }
                                     else {
                                         if ( a.start_turn > b.start_turn ){
@@ -419,11 +456,6 @@ console.log( 'Spacom.ru::Addons::Fleets::Sort booted' );
             }
         }
         return 0;
-    }
-
-    function sortFleetsByStat( a, b ){
-        // добавить сорт. по военным параметрам (поврежденные флоты - наверх)
-        return w.sortNumerically( a.health, b.health );
     }
 
     function sortFleetsByFleetName( a, b ){
