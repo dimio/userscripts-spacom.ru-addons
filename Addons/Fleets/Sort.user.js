@@ -2,7 +2,6 @@
 // @name         Spacom.ru::Addons::Fleets::Sort
 // @namespace    http://tampermonkey.net/
 // @version      0.0.9
-// @version      0.0.4
 // @description  Add a sorting filtres for fleets tabs
 // @author       dimio
 // @license      MIT
