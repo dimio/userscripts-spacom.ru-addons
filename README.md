@@ -1,12 +1,10 @@
 # Spacom.ru Addons: пользовательские скрипты для браузерной игры spacom.ru
-# Userscripts for spacom.ru online browser game
-
 ## Установка
 * Описана установка в Chrome + [Tampermonkey](http://tampermonkey.net/)
 * Установить [Spacom.ru::Addons](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js) (набор библиотечных функций для остальных дополнений)
 * Установить нужные дополнения из списка ниже, как отдельные пользовательские скрипты
 
-## Список дополненийs
+## Список дополнений
 * [Spacom.ru::Addons::ExploreAllGeo](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/ExploreAllGeo.user.js) - заказ георазведки для всех флотов в один клик
 * [Spacom.ru::Addons::Fleets::Sort](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/Sort.user.js) - разделение вкладки чужих флотов на флоты игроков и пиратов, сортировка на вкладках флотов.
 
@@ -18,7 +16,6 @@
 
 
 # Userscripts for spacom.ru online browser game
-
 ## Installing
 * Describes how to install in Chrome + [Tampermonkey](http://tampermonkey.net/)
 * Install [Spacom.ru::Addons](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js) (library functions for other Addons)
