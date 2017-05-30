@@ -1,9 +1,13 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons
 // @namespace    http://tampermonkey.net/
+
 // @version      0.0.9
 // @description  Provide Spacom.ru::Addons library functions on spacom.ru
+
+// @version      0.0.4
 // @description  Include Spacom.ru::Addons library functions on spacom.ru
+
 // @author       dimio
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
