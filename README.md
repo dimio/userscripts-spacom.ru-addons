@@ -1,5 +1,4 @@
 # Spacom.ru Addons: пользовательские скрипты для браузерной игры spacom.ru
-
 ## Установка
 * Описана установка в Chrome + [Tampermonkey](http://tampermonkey.net/)
 * Установить [Spacom.ru::Addons](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js) (набор библиотечных функций для остальных дополнений)
@@ -17,7 +16,6 @@
 
 
 # Userscripts for spacom.ru online browser game
-
 ## Installing
 * Describes how to install in Chrome + [Tampermonkey](http://tampermonkey.net/)
 * Install [Spacom.ru::Addons](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js) (library functions for other Addons)
