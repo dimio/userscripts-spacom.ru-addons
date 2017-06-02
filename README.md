@@ -6,9 +6,9 @@
 
 ## Список дополнений
 * [Spacom.ru::Addons::ExploreAllGeo](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/ExploreAllGeo.user.js) - заказ георазведки для всех флотов в один клик
-* [Spacom.ru::Addons::Fleets::Sort](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/Sort.user.js):
+* [Spacom.ru::Addons::Fleets::Sort](https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Fleets/Sort.user.js), возможности:
 	- Разделение вкладки чужих флотов на "Гарнизон", свои и чужие флоты, флоты пиратов;
-	- Добавлена фильтрация и сортировка на флотов по различным параметрам (поддерживаются множественные фильтры, исключающие фильтры, сортировка внутри отфильтрованного);
+	- Фильтрация и сортировка флотов по различным параметрам (поддерживаются множественные фильтры, исключающие фильтры, сортировка внутри отфильтрованного);
 	- Результат фильтрации и/или сортировки сохраняется до закрытия или переключения вкладки флотов.
 
 ## Требования
