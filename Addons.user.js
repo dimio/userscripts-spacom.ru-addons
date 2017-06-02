@@ -3,6 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.0.9
 // @description  Provide Spacom.ru::Addons library functions on spacom.ru
+// @description  Include Spacom.ru::Addons library functions on spacom.ru
 // @author       dimio
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
@@ -14,6 +15,7 @@
 // Based on "Spacom addons" by segrey (
 // https://greasyfork.org/en/scripts/27897-spacom-addons
 // https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
+
 // console.log('Spacom.ru::Addons booted');
 
 (function (window) {

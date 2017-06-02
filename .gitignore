@@ -1,4 +1,6 @@
 .idea
 *.log
+.eslintrc
+.jscsrc
 node_modules
 BACKUP
