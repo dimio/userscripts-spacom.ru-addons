@@ -2,5 +2,7 @@
 *.log
 .eslintrc
 .jscsrc
+todo.txt
+examples.txt
 node_modules
 BACKUP
