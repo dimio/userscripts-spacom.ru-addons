@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::Sort
 // @namespace    http://tampermonkey.net/
-// @version      0.0.9
+// @version      0.0.11
 // @description  Add a sorting filtres for fleets tabs
 // @author       dimio
 // @license      MIT
@@ -12,15 +12,6 @@
 // @run-at       document-end
 // ==/UserScript==
 // console.log('Spacom.ru::Addons::Fleets::Sort booted');
-/* TODO:
-[x] добавить фильтрацию (по владельцу или имени флота, по типу)
-[ ] для своих флотов - галка "исключить орбит. станции" (с сохр. состояния в local storage)
-[х] откл. сорт. по скорости?
-[x] если "пираты" (или "чужие", отсортировынные по владельцу) - вместо владельца сорт. по назв. флота
-[x] сохранять состояние сортировки, если вкладка флота не закрыта специально (напр. - была нажата "обзор" или "лететь")
-[x] исключать флоты из отфильтрованного по статусу "turn = 0" после нажатия "лететь"
-[ ] sortFleetsByStat - развернутая сортировка по военным параметрам
-*/
 
 (function (window) {
 
@@ -38,10 +29,10 @@
     };
     const filters_stack = [];
 
-    $('#navi > div:nth-child(3)').attr('onclick', 'showFleets({owner: \'other\'}); return false;');
-    $('#navi > div:nth-child(2)').attr('onclick', 'showFleets({owner: \'own\'}); return false;');
+    $('#navi > div:nth-child(3)').attr('onclick', 'showFleets({owner: \'other\'}); Addons.Fleets.MarkOnMap.init(); return false;');
+    $('#navi > div:nth-child(2)').attr('onclick', 'showFleets({owner: \'own\'}); Addons.Fleets.MarkOnMap.init(); return false;');
     w.createNaviBarButton('Гарнизон', 1, 'showFleets({owner: \'own\', fleet_type: \'garrison\'})');
-    w.createNaviBarButton('Пираты', 4, 'showFleets({owner: \'pirate\'})');
+    w.createNaviBarButton('Пираты', 4, 'showFleets({owner: \'pirate\'}); Addons.Fleets.MarkOnMap.init()');
 
     w.showFleets = function (opt) {
         const owner = opt.owner || 'own';
@@ -55,14 +46,20 @@
 
         const exclude_f_flag = opt.exclude_f_flag || false;
 
-    // close the Fleets tab and purge filters
+        w.backlighted_fleets = {};
+
+        if (Addons.Fleets.MarkOnMap){
+            Addons.Fleets.MarkOnMap.makeMarkButtons();
+        }
+
+        // close the Fleets tab and purge filters
         if (w.sub_menu === `fleets_${owner}_${fleet_type}` && redraw === null) {
             purgeFleetFilters(sortby, filterby, filter_key, filters_stack);
             w.sub_menu = false;
             $('#items_list').html('');
             return false;
         }
-    // вкладка флотов переключена, но не закрыта - сбросить фильтры
+        // вкладка флотов переключена, но не закрыта - сбросить фильтры
         else if (w.sub_menu !== false && w.sub_menu !== `fleets_${owner}_${fleet_type}` && redraw === null) {
             purgeFleetFilters(sortby, filterby, filter_key, filters_stack);
             w.sub_menu = `fleets_${owner}_${fleet_type}`;
@@ -72,39 +69,44 @@
         w.map.clearInfo();
         let sorted_fleets = getFleets(owner, fleet_type);
 
-    // если окно флотов закрыто автоматически (например - кн. "лететь") - сохранить сортировку
+        // если окно флотов закрыто автоматически (например - кн. "лететь") - сохранить сортировку
         if (w.sub_menu === false && (flags.sortby_last || flags.filterby_last)) {
             sortby = flags.sortby_last;
             flags.sortby_last = null;
             flags.sortby_flag = null;
         }
 
+        // сбросить фильтры или применить повторно
         if (w.isObjNotEmpry(filters_stack)) {
-            for (const i in filters_stack) {
-                if (filters_stack.hasOwnProperty(i)) {
-                    const filter = Object.keys(filters_stack[i]);
-            // нужно сюда sortby передавать? проверить
-                    sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filter,
-                                           filters_stack[i][filter][0], filters_stack[i][filter][1]);
+            if (filterby === 'player_name') {
+                filters_stack.length = 0;
+            }
+            else {
+                for (const i in filters_stack) {
+                    if (filters_stack.hasOwnProperty(i)) {
+                        let filter = Object.keys(filters_stack[i]);
+                        // нужно сюда sortby передавать? проверить
+                        sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filter,
+                                                       filters_stack[i][filter][0], filters_stack[i][filter][1]);
+                    }
                 }
             }
         }
 
-    // filtering selected
+        // filtering selected
         if (w.isVariableDefined(filterby) && (sortby === 'no' || sortby === null)) {
-            sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby,
-                filterby, filter_key, exclude_f_flag);
-            if (w.isVariableDefined(filter_key)) {
-        // TODO: возм., убирать ПОЛНОСТЬЮ повторяющиеся фильтры из стека?
-        // (если это не будет дольше в итоге, чем раз-другой повторно профильтровать)
-        // напр.: sort CHKSUM(filter_N), CHKSUM(filter_N+1)
-                const filter = {};
+            sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filterby, filter_key, exclude_f_flag);
+            if (w.isVariableDefined(filter_key)){
+                // TODO: возм., убирать ПОЛНОСТЬЮ повторяющиеся фильтры из стека?
+                // (если это не будет дольше в итоге, чем раз-другой повторно профильтровать)
+                // напр.: sort CHKSUM(filter_N), CHKSUM(filter_N+1)
+                let filter = {};
                 filter[filterby] = [];
                 filter[filterby].push(filter_key, exclude_f_flag);
                 filters_stack.push(filter);
             }
         }
-    // sorting selected
+        // sorting selected
         else if (sortby && sortby !== 'no') {
             sorted_fleets = sortFleetsBy(sorted_fleets, owner, sortby, filterby);
         }
@@ -122,11 +124,21 @@
             }
         }, 0);
 
+        // для корректной работы подсветки на карте - развернуть
+        // отфильтрованный массив в хэш с уникальными ключами
+        for (let i in sorted_fleets){
+            let fleet = sorted_fleets[i];
+            if (fleet.fleet_id in w.backlighted_fleets){
+                continue;
+            }
+            w.backlighted_fleets[fleet.fleet_id] = fleet;
+        }
+
         return true;
     };
 
     function purgeFleetFilters(sortby, filterby, filter_key) {
-    // filters_stack = {};
+        // filters_stack = {};
         filters_stack.length = 0;
 
         sortby = null;
@@ -136,6 +148,8 @@
         filterby = null;
         flags.filterby_last = null;
         filter_key = null;
+
+        w.backlighted_fleets = {};
     }
 
     function filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filterby, filter_key, exclude_f_flag) {
@@ -144,8 +158,8 @@
         if (filter_key === null) {
             for (const i in sorted_fleets) {
                 if (sorted_fleets.hasOwnProperty(i)) {
-          // хэш: имя ключа == параметру фильрации
-          // filter_keys[ sorted_fleets[i] -> [filterby] ] = sorted_fleets[i] -> [filterby];
+                    // хэш: имя ключа == параметру фильрации
+                    // filter_keys[ sorted_fleets[i] -> [filterby] ] = sorted_fleets[i] -> [filterby];
                     filter_keys[sorted_fleets[i][filterby]] = filterby;
                 }
             }
@@ -176,11 +190,11 @@
 
     function showModalFilterList(arr, owner, fleet_type, sortby, filterby) {
         const sorted_list = Object.keys(arr).sort(w.sortAlphabetically);
-    // TODO: (если совсем нечего делать будет)
-    // ?? + добавить обработку значений перед выводом:
-    // если по типу кораблей - возвр. названия кораблей по имени иконок,
-    // если по игроку - ничего, по статусу - кол-во ходов
-    // и обратную обработку для генерации кнопки ОК
+        // TODO: (если совсем нечего делать будет)
+        // ?? + добавить обработку значений перед выводом:
+        // если по типу кораблей - возвр. названия кораблей по имени иконок,
+        // если по игроку - ничего, по статусу - кол-во ходов
+        // и обратную обработку для генерации кнопки ОК
 
         const id = 'fl_filter';
         let message = `Отфильтровать по:</br><select id="${id}">`;
@@ -198,17 +212,17 @@
         $('#filtering-list-checkbox').change(function (exclude_f_flag) {
             if ($(this).is(':checked')) {
                 exclude_f_flag = true;
-        // exclude_flag = true;
+                // exclude_flag = true;
             }
             else {
                 exclude_f_flag = false;
-        // exclude_flag = false;
+                // exclude_flag = false;
             }
 
             $('#data_modal > select').change(function () {
                 const select = $(this).val();
                 $('#data_modal > button').attr('onclick',
-                                       `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                                               `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${filterby}',
 filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
             }).change();
@@ -338,13 +352,13 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                 if (i === 'player_name' && owner !== 'other') {
                     i = 'fleet_name';
                     w.appendElemClickableIcon(div, 'fa-filter', `filter-by-${i}`, 'Отфильтровать',
-                                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                                              `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${i}'})`);
                     continue;
                 }
 
                 w.appendElemClickableIcon(div, 'fa-filter', `filter-by-${i}`, 'Отфильтровать',
-                                  `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                                          `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${i}'})`);
             }
         }
@@ -362,13 +376,13 @@ redraw:'1', sortby:'no', filterby:'${i}'})`);
                 }
 
                 w.makeElementClickable(div, 'fa-sort', `sort-by-${i}`, 'Отсортировать',
-                               `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                                       `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'${i}'})`);
 
                 if (owner === 'other' && i === 'player_name') { // а надо в принципе по id сортировать?
                     i = 'player_id';
                     w.appendElemClickableIcon(div, 'fa-id-badge', `sort-by-${i}`, 'Отсортировать по ID владельца',
-                                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                                              `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'${i}'})`);
                 }
             }
@@ -393,13 +407,13 @@ redraw:'1', sortby:'${i}'})`);
     }
 
     function sortFleetsByStat(a, b) {
-    // добавить сорт. по военным параметрам (поврежденные флоты - наверх)
+        // добавить сорт. по военным параметрам (поврежденные флоты - наверх)
         return w.sortNumerically(a.health, b.health);
     }
 
     function sortOwnFleetsByState(a, b) {
-    // Order:
-    /* const order = [ //qw
+        // Order:
+        /* const order = [ //qw
             'allow_bomb',
             'allow_invasion',
             'allow_settle',
@@ -410,7 +424,7 @@ redraw:'1', sortby:'${i}'})`);
             'allow_station',
             'start_turn',
         ];*/
-    // return w.sortNumerically( a[order[j]], b[order[j]] );
+        // return w.sortNumerically( a[order[j]], b[order[j]] );
 
         if (a.allow_explore > b.allow_explore) {
             return 1;
@@ -475,12 +489,12 @@ redraw:'1', sortby:'${i}'})`);
     }
 
     function sortFleetsByPlayerId(a, b) {
-    // по возрастанию
+        // по возрастанию
         return w.sortNumerically(a.player_id, b.player_id);
     }
 
     function sortFleetsBySpeed(a, b) {
-    // по убыванию
+        // по убыванию
         return -w.sortNumerically(a.fleet_speed, b.fleet_speed);
     }
 
