@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::MarkOnMap
 // @namespace    http://tampermonkey.net/
 // @version      0.0.1
@@ -9,13 +9,13 @@
 // @match        https://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
-console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap dev booted' );
+console.log (this.name, ' dev booted');
 
 (function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
-    var w = unsafeWindow;
+    const w = unsafeWindow;
 
-    if (w.self != w.top) {
+    if (w.self !== w.top) {
         return;
     }
 
@@ -35,7 +35,7 @@ console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap dev booted' );
         buttonOff: null,
         enabled: false,
 
-        markFleetsOnMap: function (fleets){
+        markFleetsOnMap (fleets){
             if (w.backlighted_fleets){
                 for (let i in w.backlighted_fleets){
                     const fleet = w.backlighted_fleets[i];
@@ -53,14 +53,14 @@ console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap dev booted' );
                 w.Addons.drawCircles(circles);
             }
         },
-        unmarkFleetsOnMap: function (circles){
+        unmarkFleetsOnMap (circles){
             circles = w.Addons.Fleets.mark_circles;
             for (let j in circles){
                 scene.remove( circles[j] );
                 delete circles[j];
             }
         },
-        setMarkFillColor: function (fleet_owner){
+        setMarkFillColor (fleet_owner){
             if ( fleet_owner == 'own' ){
                 return 'blue';
             }
@@ -76,18 +76,18 @@ console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap dev booted' );
             return 'coral';
         },
 
-        turnOn: function(){
+        turnOn (){
             this.enabled = true;
             this.markFleetsOnMap();
             scene.renderAll();
         },
-        turnOff: function(){
+        turnOff (){
             if (this.enabled){
                 this.unmarkFleetsOnMap();
                 scene.renderAll();
             }
         },
-        makeMarkButtons: function (){
+        makeMarkButtons (){
             const self = this;
             // Addons.waitMenu.bind(this);
             // разобр., почему не работает this.waitMenu, хотя waitMenu унаследована и вызывается так:
@@ -102,7 +102,7 @@ console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap dev booted' );
                 w.Addons.replaceElemContent( $('div.col-xs-4.col-md-2.fleet_actions')[0], self.buttonOn, self.buttonOff);
             } );
         },
-        init: function () {
+        init () {
             this.makeMarkButtons();
 
             /*const renewMap = map.renewMap;
@@ -114,4 +114,3 @@ console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap dev booted' );
     };
 
 })(window);
-

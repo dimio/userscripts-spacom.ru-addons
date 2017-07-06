@@ -16,13 +16,13 @@
 * https://greasyfork.org/en/scripts/27897-spacom-addons
 * https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
 */
-console.log('Spacom.ru::Addons booted');
+console.log (this.name, ' booted');
 
 (function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
-    var w = unsafeWindow;
+    const w = unsafeWindow;
 
-    if (w.self != w.top) {
+    if (w.self !== w.top) {
         return;
     }
 
@@ -32,7 +32,7 @@ console.log('Spacom.ru::Addons booted');
 
     w.Addons = {
 
-        waitFor: function (obj, prop, callback){
+        waitFor (obj, prop, callback){
             const token = setInterval(() => {
                 if (obj[prop] !== undefined) {
                     clearInterval(token);
@@ -41,7 +41,7 @@ console.log('Spacom.ru::Addons booted');
             }, 0);
         },
 
-        waitMenu: function (menu, callback){
+        waitMenu (menu, callback){
             const token = setInterval(() => {
                 if (typeof menu !== undefined){
                     if (w.isVariableDefined(menu.length) && menu.length > 0) {
@@ -52,7 +52,7 @@ console.log('Spacom.ru::Addons booted');
             }, 0);
         },
 
-        replaceElemContent: function (elem){
+        replaceElemContent (elem){
             $(elem).empty();
 
             for (let i = 1; i < arguments.length; i++) {
@@ -62,7 +62,7 @@ console.log('Spacom.ru::Addons booted');
             return elem;
         },
 
-        createCircle: function (opt) {
+        createCircle (opt) {
             const x = opt.x;
             const y = opt.y;
             const radius = opt.radius || 3;
@@ -86,7 +86,7 @@ console.log('Spacom.ru::Addons booted');
 
             return circle;
         },
-        drawCircle: function ( circle ) {
+        drawCircle ( circle ) {
             //debugger;
             if (circle.visible === false){
                 scene.add(circle);
@@ -96,12 +96,12 @@ console.log('Spacom.ru::Addons booted');
                 });
             }
         },
-        drawCircles: function (circles) {
+        drawCircles (circles) {
             for ( let i in circles ){
                 this.drawCircle( circles[i] );
             }
         },
-        getFleetCenter: function (fleet){
+        getFleetCenter (fleet){
             // если нужна пометка флота - вернуть центр
             // если зона видимости - вернуть центр или центр старта
             let center;

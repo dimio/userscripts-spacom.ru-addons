@@ -11,7 +11,7 @@
 // @match        http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
-// console.log('Spacom.ru::Addons::Fleets::Sort booted');
+console.log (this.name, ' booted');
 
 (function (window) {
 
