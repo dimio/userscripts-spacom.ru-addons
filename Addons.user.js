@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons
-// @namespace    http://tampermonkey.net/
-// @version      0.0.11
+// @version      0.0.12
+// @namespace    http://dimio.org/
 // @description  Provide Spacom.ru::Addons library functions on spacom.ru
-// @author       dimio
+// @author       dimio (dimio@dimio.org)
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
-// @supportURL   dimio.org, dimio@dimio.org
+// @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
+// @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
 // @match        http*://spacom.ru/*
 // @run-at       document-start
@@ -16,7 +17,7 @@
 * https://greasyfork.org/en/scripts/27897-spacom-addons
 * https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
 */
-console.log (this.name, ' booted');
+console.log('Spacom.ru::Addons booted');
 
 (function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
@@ -32,7 +33,7 @@ console.log (this.name, ' booted');
 
     w.Addons = {
 
-        waitFor (obj, prop, callback){
+        waitFor: function (obj, prop, callback){
             const token = setInterval(() => {
                 if (obj[prop] !== undefined) {
                     clearInterval(token);
@@ -41,7 +42,7 @@ console.log (this.name, ' booted');
             }, 0);
         },
 
-        waitMenu (menu, callback){
+        waitMenu: function (menu, callback){
             const token = setInterval(() => {
                 if (typeof menu !== undefined){
                     if (w.isVariableDefined(menu.length) && menu.length > 0) {
@@ -52,7 +53,7 @@ console.log (this.name, ' booted');
             }, 0);
         },
 
-        replaceElemContent (elem){
+        replaceElemContent: function (elem){
             $(elem).empty();
 
             for (let i = 1; i < arguments.length; i++) {
@@ -62,7 +63,7 @@ console.log (this.name, ' booted');
             return elem;
         },
 
-        createCircle (opt) {
+        createCircle: function (opt) {
             const x = opt.x;
             const y = opt.y;
             const radius = opt.radius || 3;
@@ -81,31 +82,33 @@ console.log (this.name, ' booted');
                 visible: false,
             });
 
-            /*scene.add(circle);
-            scene.sendToBack(circle);*/
+            scene.add(circle);
+            scene.sendToBack(circle);
 
             return circle;
         },
-        drawCircle ( circle ) {
-            //debugger;
-            if (circle.visible === false){
-                scene.add(circle);
-                scene.sendToBack(circle);
-                circle.set({
-                    visible: true
-                });
-            }
+        drawCircle: function ( circle ) {
+            circle.set({
+                visible: true
+            });
         },
-        drawCircles (circles) {
+        drawCircles: function (circles) {
             for ( let i in circles ){
                 this.drawCircle( circles[i] );
             }
         },
-        getFleetCenter (fleet){
-            // если нужна пометка флота - вернуть центр
-            // если зона видимости - вернуть центр или центр старта
+
+        getFleetCenter: function (opt){
+            const fleet = opt.fleet;
+            const mode = opt.mode;
+
             let center;
 
+            if (mode === 'mark'){
+                center = w.getCenterXY(fleet.x, fleet.y);
+                return center;
+            }
+            // or 'viewzone' and ...
             if (+fleet.turn === 0) {
                 center = w.getCenterXY(fleet.x, fleet.y);
             }
