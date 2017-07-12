@@ -14,7 +14,7 @@
 // ==/UserScript==
 console.log( "Spacom.ru::Addons::Map::MarkAnomaly dev booted" );
 const ANOMALY_LABEL = {
-    'food':	{'ico': '\uf0f5', 'color': '#f9cc6d'}, //fa-cutlery
+    'food': {'ico': '\uf0f5', 'color': '#f9cc6d'}, //fa-cutlery
     'house': {'ico': '\uf0ac', 'color': '#24CA25'}, //fa-globe
     'money': {'ico': '\uf10c', 'color': '#FFF5B2'}, //fa-circle-o
     'production': {'ico': '\uf085', 'color': '#ea8a6c'}, //fa-cogs
@@ -317,11 +317,12 @@ const ANOMALY_LABEL = {
         },
 
         logger: function (err){
-            console.err(err);
+            console.error(err);
         },
 
         connectDB: function (f){
             var request = indexedDB.open(baseName, 1);
+            var self = this;
             request.onerror = this.logger;
             request.onsuccess = function(){
                 // При успешном открытии вызвали коллбэк передав ему объект БД
@@ -333,7 +334,7 @@ const ANOMALY_LABEL = {
                     keyPath: "id",
                     autoIncrement: false,
                 });
-                connectDB(f);
+                self.connectDB(f);
             };
         },
 
@@ -344,4 +345,3 @@ const ANOMALY_LABEL = {
         Addons.FindAnomaly.init();
     }
 })(window);
-
