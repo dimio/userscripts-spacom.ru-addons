@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons
-// @version      0.0.12
+// @version      0.0.13
 // @namespace    http://dimio.org/
 // @description  Provide Spacom.ru::Addons library functions on spacom.ru
 // @author       dimio (dimio@dimio.org)
@@ -15,7 +15,6 @@
 /*
 * Based on "Spacom addons" by segrey (
 * https://greasyfork.org/en/scripts/27897-spacom-addons
-* https://spacom.ru/forum/discussion/47/polzovatelskie-skripty)
 */
 console.log('Spacom.ru::Addons booted');
 
@@ -66,6 +65,7 @@ console.log('Spacom.ru::Addons booted');
         createCircle: function (opt) {
             const x = opt.x;
             const y = opt.y;
+
             const radius = opt.radius || 3;
             const fill = opt.fill || 'rgb(40,100,40)';//light-green
             const opacity = opt.opacity || 0.2;
@@ -156,7 +156,14 @@ console.log('Spacom.ru::Addons booted');
         const last = $(`#navi > div:nth-child(${last_el_num})`);
 
         $(last).parent().css({
-            width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
+            //width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
+            'width': 'fit-content',
+            'padding-left': '5px',
+            'padding-right': '5px',
+        });
+        $(last).parent().children('*').css({
+            //'margin-left': '10px',
+            'margin-right': '5px',
         });
 
         const next = $(`<div class="${last.attr('class')}" onclick="${callback};
