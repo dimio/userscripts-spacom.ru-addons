@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::MarkOnMap
-// @version      0.0.2
+// @version      0.0.3
 // @namespace    http://dimio.org/
 // @description  Make fleets markable on map
 // @author       dimio (dimio@dimio.org)
@@ -15,9 +15,10 @@
 console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap booted' );
 const MARK_SETTINGS = {
     'FILL_COLOR': {
-        'own':		'blue',
-        'other':	'red',
-        'pirate':	'yellow',
+        'own':      'blue',
+        'other':    'red',
+        'pirate':   'yellow',
+        'peace':    '#94ff00', //light-green
     },
     'RADIUS':  0.8,
     'OPACITY': 0.5,
@@ -116,4 +117,3 @@ const MARK_SETTINGS = {
     };
 
 })(window);
-

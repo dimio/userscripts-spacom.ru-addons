@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::Sort
-// @version      0.0.12
+// @version      0.0.13
 // @namespace    http://dimio.org/
 // @description  Add a sorting filtres for fleets tabs
 // @author       dimio (dimio@dimio.org)
@@ -33,7 +33,8 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
     $('#navi > div:nth-child(3)').attr('onclick', 'showFleets({owner: \'other\'}); Addons.Fleets.MarkOnMap.init(); return false;');
     $('#navi > div:nth-child(2)').attr('onclick', 'showFleets({owner: \'own\'}); Addons.Fleets.MarkOnMap.init(); return false;');
     w.createNaviBarButton('Гарнизон', 1, 'showFleets({owner: \'own\', fleet_type: \'garrison\'}); Addons.Fleets.MarkOnMap.init()');
-    w.createNaviBarButton('Пираты', 4, 'showFleets({owner: \'pirate\'}); Addons.Fleets.MarkOnMap.init()');
+    w.createNaviBarButton('Союзные', 3, 'showFleets({owner: \'peace\'}); Addons.Fleets.MarkOnMap.init()');
+    w.createNaviBarButton('Пираты', 5, 'showFleets({owner: \'pirate\'}); Addons.Fleets.MarkOnMap.init()');
 
     w.showFleets = function (opt) {
         const owner = opt.owner || 'own';
@@ -331,7 +332,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                     continue;
                 }
                 if (i === 'player_name') {
-                    if (owner === 'other'){
+                    if (owner === 'other' || owner === 'peace'){
                         w.appendElemClickableIcon(div, 'fa-id-badge', `filter-by-${i}`, 'Отфильтровать по владельцу',
                                                   `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${i}'})`);
