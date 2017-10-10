@@ -15,6 +15,8 @@
 console.log( "Spacom::Addons::Design::Extensions" );
 
 (function (window) {
+    'use strict';
+
     window.unsafeWindow = window.unsafeWindow || window;
     var w = unsafeWindow;
 
@@ -38,9 +40,6 @@ console.log( "Spacom::Addons::Design::Extensions" );
 
     if (w.Design) {
         w.Addons.waitFor(w, "design", function (design) {
-            calcLaserPowerSumm(design.params);
-            calcLaserEqHp(design.params);
-
             var _designCalc = design.calc;
             design.calc = function() {
                 _designCalc.apply(this, arguments);
@@ -61,6 +60,7 @@ console.log( "Spacom::Addons::Design::Extensions" );
                                       "lazer_defence'] + '%&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Приведённые очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&nbsp;' : '' %>");
             document.getElementById("design_info_template").innerHTML = designInfoTemplate;
 
+            design.calc();
             design.draw();
         });
     }
