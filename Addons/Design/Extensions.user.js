@@ -29,13 +29,11 @@ console.log( "Spacom::Addons::Design::Extensions" );
     }
 
     function calcLaserPowerSumm(params){
-       params.laser_power_summ = params.lazer_power * params.lazer_shots;
-       return;
+       return params.lazer_power * params.lazer_shots;
     }
 
     function calcLaserEqHp(params){
-        params.laser_eq_hp = Math.round( params.hp / (1 - params.lazer_defence/100) );
-        return;
+       return Math.round( params.hp / (1 - params.lazer_defence/100) );
     }
 
     if (w.Design) {
@@ -43,8 +41,8 @@ console.log( "Spacom::Addons::Design::Extensions" );
             var _designCalc = design.calc;
             design.calc = function() {
                 _designCalc.apply(this, arguments);
-                calcLaserPowerSumm(design.params);
-                calcLaserEqHp(design.params);
+                design.params.laser_power_summ = calcLaserPowerSumm(design.params);
+                design.params.laser_eq_hp = calcLaserEqHp(design.params);
             };
 
             var _designDraw = design.draw;
