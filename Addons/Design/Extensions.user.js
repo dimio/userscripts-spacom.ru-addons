@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom::Addons::Design::Extensions
-// @version      0.0.5
+// @version      0.0.6
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
@@ -15,9 +15,9 @@
 // @run-at       document-end
 // ==/UserScript==
 // An "All levels" addon - maked by segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
-console.log( "Spacom::Addons::Design::Extensions" );
+console.log("Spacom::Addons::Design::Extensions");
 
-(function (window) {
+(function(window) {
     'use strict';
 
     window.unsafeWindow = window.unsafeWindow || window;
@@ -27,50 +27,51 @@ console.log( "Spacom::Addons::Design::Extensions" );
         return;
     }
 
-    if ( !w.Addons ){
+    if (!w.Addons) {
         return false;
     }
 
-    if ( !Addons.Design ){
+    if (!Addons.Design) {
         Addons.Design = {};
     }
 
     Addons.Design.ExtraInfo = {
-        makeDesignInfoTemplate: function(){
+        makeDesignInfoTemplate: function() {
             var designInfoTemplate = document.getElementById("design_info_template").innerHTML;
 
             designInfoTemplate = designInfoTemplate.replace("lazer_shots'] + '&nbsp;' : '' %>",
-                                                            "lazer_shots'] + ' <span class=\"lazer_attack\">&sum;&nbsp;</span>' + params['laser_power_summ'] + '&nbsp;' : '' %>");
+                "lazer_shots'] + ' <span class=\"lazer_attack\">&sum;&nbsp;</span>' + params['laser_power_summ'] + '&nbsp;' : '' %>");
             designInfoTemplate = designInfoTemplate.replace("lazer_defence'] + '%&nbsp;' : '' %>",
-                                                            "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Приведённые очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&nbsp;' : '' %>");
+                "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Приведённые очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&nbsp;' : '' %>");
             designInfoTemplate = designInfoTemplate.replace("cannon_defence'] + '&nbsp;' : '' %>",
-                                                            "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
-            /*designInfoTemplate = designInfoTemplate.replace("<button",
-*/
+                "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
+            designInfoTemplate = designInfoTemplate.replace(/<br\/>\s*<button/,
+                "<%= ( params['ship_power'] > '0') ? '<i class=\"fa fa-percent\" title=\"Примерная боевая эффективность корабля\"></i>&nbsp;' + params['ship_power'] : '' %> <br><br><button");
+
             document.getElementById("design_info_template").innerHTML = designInfoTemplate;
         },
-        calcLaserPowerSumm: function(params){
+        calcLaserPowerSumm: function(params) {
             return params.lazer_power * params.lazer_shots;
         },
-        calcLaserEqHp: function(params){
-            return Math.round( params.hp / (1 - params.lazer_defence/100) );
+        calcLaserEqHp: function(params) {
+            return Math.round(params.hp / (1 - params.lazer_defence / 100));
         },
-        calcLaserHp: function(hp, laser_eq_hp){
+        calcLaserHp: function(hp, laser_eq_hp) {
             return laser_eq_hp - hp;
         },
-        calcCannonHp: function(params){
+        calcCannonHp: function(params) {
             return params.hp + params.cannon_defence;
         },
-        calcShipPower: function(params){
+        calcShipPower: function(params) {
             //Если считать приближенно (точность 95%), то мощь корабля -
             //это корень из произведения его живучести и суммарного урона.
-            var shipPower = Math.sqrt( (params.hp + params.cannon_defence + params.laser_defence_hp) *
-                                      (params.laser_power_summ + params.cannon_power + params.rocket_power)
-                                     );
+            var shipPower = Math.sqrt(params.hp *
+                (params.laser_power_summ + params.cannon_power + params.rocket_power)
+            );
             shipPower = shipPower / 100; //to percents
             return Math.round(shipPower * 100) / 100; //round
         },
-        init: function(){
+        init: function() {
             var self = this;
 
             var _designCalc = design.calc;
@@ -100,13 +101,13 @@ console.log( "Spacom::Addons::Design::Extensions" );
     };
 
     Addons.Design.DetailKnownLevel = {
-        makeDetailInstanceTemplate: function(){
+        makeDetailInstanceTemplate: function() {
             var detailInstanceTemplate = document.getElementById("detail_instance").innerHTML;
             detailInstanceTemplate = detailInstanceTemplate.replace(/<%=level%>\n/,
-                                                                    '<%=level%><div title="Изученный уровень детали">(<%=known_level%>)</div>');
+                '<%=level%><div title="Изученный уровень детали">(<%=known_level%>)</div>');
             document.getElementById("detail_instance").innerHTML = detailInstanceTemplate;
         },
-        init: function(){
+        init: function() {
             for (var i in design.template_components) {
                 design.template_components[i].known_level = design.template_components[i].max_level;
             }
@@ -125,41 +126,41 @@ console.log( "Spacom::Addons::Design::Extensions" );
 
     Addons.Design.AllLevels = {
         // Author: segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
-        enable: function () {
+        enable: function() {
             for (var i in design.template_components) {
                 design.template_components[i].max_level = 100;
             }
             design.draw();
         },
-        disable: function () {
+        disable: function() {
             for (var i in design.template_components) {
                 design.template_components[i].max_level = design.template_components[i]._max_level;
             }
             design.draw();
         },
-        init: function () {
-            var self = this;
-            $("#details_list").prepend('<span><input id="all_levels" type="checkbox"> все уровни</span>');
-            $("#all_levels").on("change", function () {
-                if ($(this).is(":checked")) {
-                    self.enable();
-                } else {
-                    self.disable();
+        init: function() {
+                var self = this;
+                $("#details_list").prepend('<span><input id="all_levels" type="checkbox"> все уровни</span>');
+                $("#all_levels").on("change", function() {
+                    if ($(this).is(":checked")) {
+                        self.enable();
+                    } else {
+                        self.disable();
+                    }
+                });
+                for (var i in design.template_components) {
+                    design.template_components[i]._max_level = design.template_components[i].max_level;
                 }
-            });
-            for (var i in design.template_components) {
-                design.template_components[i]._max_level = design.template_components[i].max_level;
             }
-        }
-        // Author: segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
+            // Author: segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
     };
 
     if (w.Design) {
-        w.Addons.waitFor(w, "design", function (design) {
+        w.Addons.waitFor(w, "design", function(design) {
             Addons.Design.ExtraInfo.init();
             Addons.Design.DetailKnownLevel.init();
             // be backwards-compatible with "spacom-addons" userscript by segrey
-            if ( !w.Addons.AllLevels ){
+            if (!w.Addons.AllLevels) {
                 Addons.Design.AllLevels.init();
             }
         });

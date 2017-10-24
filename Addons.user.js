@@ -13,12 +13,14 @@
 // @run-at       document-start
 // ==/UserScript==
 /*
-* Based on "Spacom addons" by segrey (
-* https://greasyfork.org/en/scripts/27897-spacom-addons
-*/
+ * Based on "Spacom addons" by segrey (
+ * https://greasyfork.org/en/scripts/27897-spacom-addons
+ */
 console.log('Spacom.ru::Addons booted');
 
-(function (window) {
+(function(window) {
+    'use strict';
+
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -26,13 +28,13 @@ console.log('Spacom.ru::Addons booted');
         return;
     }
 
-    if ( !w.Addons ){
+    if (!w.Addons) {
         w.Addons = {};
     }
 
     w.Addons = {
 
-        waitFor: function (obj, prop, callback){
+        waitFor: function(obj, prop, callback) {
             const token = setInterval(() => {
                 if (obj[prop] !== undefined) {
                     clearInterval(token);
@@ -41,33 +43,33 @@ console.log('Spacom.ru::Addons booted');
             }, 0);
         },
 
-        waitMenu: function (menu, callback){
+        waitMenu: function(menu, callback) {
             const token = setInterval(() => {
-                if (typeof menu !== undefined){
+                if (typeof menu !== undefined) {
                     if (w.isVariableDefined(menu.length) && menu.length > 0) {
                         clearInterval(token);
-                        callback( menu );
+                        callback(menu);
                     }
                 }
             }, 0);
         },
 
-        replaceElemContent: function (elem){
+        replaceElemContent: function(elem) {
             $(elem).empty();
 
             for (let i = 1; i < arguments.length; i++) {
-                $(elem).append( arguments[i] );
+                $(elem).append(arguments[i]);
             }
 
             return elem;
         },
 
-        createCircle: function (opt) {
+        createCircle: function(opt) {
             const x = opt.x;
             const y = opt.y;
 
             const radius = opt.radius || 3;
-            const fill = opt.fill || 'rgb(40,100,40)';//light-green
+            const fill = opt.fill || 'rgb(40,100,40)'; //light-green
             const opacity = opt.opacity || 0.2;
 
             const circle = new fabric.Circle({
@@ -87,33 +89,32 @@ console.log('Spacom.ru::Addons booted');
 
             return circle;
         },
-        drawCircle: function ( circle ) {
+        drawCircle: function(circle) {
             circle.set({
                 visible: true
             });
         },
-        drawCircles: function (circles) {
-            for ( let i in circles ){
-                this.drawCircle( circles[i] );
+        drawCircles: function(circles) {
+            for (let i in circles) {
+                this.drawCircle(circles[i]);
             }
         },
 
-        getFleetCenter: function (opt){
+        getFleetCenter: function(opt) {
             const fleet = opt.fleet;
             const mode = opt.mode;
 
             let center;
 
-            if (mode === 'mark'){
+            if (mode === 'mark') {
                 center = w.getCenterXY(fleet.x, fleet.y);
                 return center;
             }
             // or 'viewzone' and ...
             if (+fleet.turn === 0) {
                 center = w.getCenterXY(fleet.x, fleet.y);
-            }
-            else {
-                center = {x: fleet.start_x, y: fleet.start_y};
+            } else {
+                center = { x: fleet.start_x, y: fleet.start_y };
             }
 
             return center;
@@ -121,7 +122,7 @@ console.log('Spacom.ru::Addons booted');
 
     };
 
-    w.appendOnclickEvent = function (i, elem, callback) {
+    w.appendOnclickEvent = function(i, elem, callback) {
         const last_onclick = $(elem).attr('onclick');
         const new_onclick = `${callback}; ${last_onclick}`;
         $(elem).attr('onclick', new_onclick);
@@ -129,7 +130,7 @@ console.log('Spacom.ru::Addons booted');
         return elem;
     };
 
-    w.appendElemClickableIcon = function (elem, icon, css_name, title, callback) {
+    w.appendElemClickableIcon = function(elem, icon, css_name, title, callback) {
         elem = $(elem);
 
         const clickable_icon = document.createElement('a');
@@ -144,7 +145,7 @@ console.log('Spacom.ru::Addons booted');
         return elem;
     };
 
-    w.makeElementClickable = function (elem, icon, css_name, title, callback) {
+    w.makeElementClickable = function(elem, icon, css_name, title, callback) {
         let text = elem.innerText;
         if (icon) { text = `<i id="${css_name}" class="fa ${icon}"></i> ${text}`; }
         elem.innerHTML = `<a href="#" title="${title}" onclick="${callback}; return false;">${text}</a>`;
@@ -152,7 +153,7 @@ console.log('Spacom.ru::Addons booted');
         return elem;
     };
 
-    w.createNaviBarButton = function (name, last_el_num, callback) {
+    w.createNaviBarButton = function(name, last_el_num, callback) {
         const last = $(`#navi > div:nth-child(${last_el_num})`);
 
         $(last).parent().css({
@@ -173,7 +174,7 @@ return false;"><a href="#">${name}</a></div>`);
         return next;
     };
 
-    w.createActionButton = function (btn_text, css_class, css_id) {
+    w.createActionButton = function(btn_text, css_class, css_id) {
         const button = $(`<button class="btn-action" id="${css_id}" onclick="return false;">
 <i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
 <br></button>`);
@@ -181,13 +182,13 @@ return false;"><a href="#">${name}</a></div>`);
         return button;
     };
 
-    w.appendElemActionButton = function (button, parent_el){
+    w.appendElemActionButton = function(button, parent_el) {
         parent_el.append(button);
 
         return parent_el;
     };
 
-    w.createMapButton = function (css, id, title) {
+    w.createMapButton = function(css, id, title) {
         const last = $('#radar + div');
         const next = $(`<div id="${id}" title="${title}"><i class="fa ${css} fa-2x"></i></div>`).css({
             'z-index': last.css('z-index'),
@@ -202,7 +203,7 @@ return false;"><a href="#">${name}</a></div>`);
         return next;
     };
 
-    w.sortAlphabetically = function (a, b) {
+    w.sortAlphabetically = function(a, b) {
         //const a_cmp = a.toUpperCase();
         //const b_cmp = b.toUpperCase();
 
@@ -212,21 +213,21 @@ return false;"><a href="#">${name}</a></div>`);
         return a.localeCompare(b);
     };
 
-    w.sortNumerically = function (a, b) {
+    w.sortNumerically = function(a, b) {
         const a_cmp = parseFloat(a, 10);
         const b_cmp = parseFloat(b, 10);
 
         return a_cmp - b_cmp;
     };
 
-    w.isObjNotEmpry = function (obj) {
+    w.isObjNotEmpry = function(obj) {
         if (Object.values(obj).filter(this.isVariableDefined).length > 0) {
             return true;
         }
         return false;
     };
 
-    w.isVariableDefined = function (value) {
+    w.isVariableDefined = function(value) {
         if (typeof value === 'undefined') {
             return false; // retrun value >>> 0
         }
@@ -236,7 +237,7 @@ return false;"><a href="#">${name}</a></div>`);
         return true;
     };
 
-    w.toggleFlag = function (flag) {
+    w.toggleFlag = function(flag) {
         if (this.isVariableDefined(flag)) {
             flag = null;
             return flag;
@@ -246,29 +247,3 @@ return false;"><a href="#">${name}</a></div>`);
     };
 
 })(window);
-
-/*
-    function createCircle ( opt ) {
-      var center = getCenterXY(opt.center.x, opt.center.y);
-      var radius = opt.radius || 3;
-      var fill = opt.circle_fill || 'rgb(40,100,40)';
-
-      let circle = new fabric.Circle({
-        left: center.x,
-        top: center.y,
-        radius: radius * box_size,
-        fill: fill,
-        opacity: 0.2,
-        originX: 'center',
-        originY: 'center',
-        selectable: false,
-        visible: false,
-        //visible: true,
-      });
-
-      scene.add(circle);
-      scene.sendToBack(circle);
-
-      return circle;
-    }
-*/
