@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom::Addons::Design::Extensions
-// @version      0.0.5
+// @version      0.0.6
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
@@ -45,8 +45,9 @@ console.log( "Spacom::Addons::Design::Extensions" );
                                                             "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Приведённые очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&nbsp;' : '' %>");
             designInfoTemplate = designInfoTemplate.replace("cannon_defence'] + '&nbsp;' : '' %>",
                                                             "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
-            /*designInfoTemplate = designInfoTemplate.replace("<button",
-*/
+            designInfoTemplate = designInfoTemplate.replace(/<br\/>\s*<button/,
+                                                            "<%= ( params['ship_power'] > '0') ? '<i class=\"fa fa-percent\" title=\"Примерная боевая эффективность корабля\"></i>&nbsp;' + params['ship_power'] : '' %> <br><br><button");
+
             document.getElementById("design_info_template").innerHTML = designInfoTemplate;
         },
         calcLaserPowerSumm: function(params){
@@ -64,7 +65,7 @@ console.log( "Spacom::Addons::Design::Extensions" );
         calcShipPower: function(params){
             //Если считать приближенно (точность 95%), то мощь корабля -
             //это корень из произведения его живучести и суммарного урона.
-            var shipPower = Math.sqrt( (params.hp + params.cannon_defence + params.laser_defence_hp) *
+            var shipPower = Math.sqrt( params.hp *
                                       (params.laser_power_summ + params.cannon_power + params.rocket_power)
                                      );
             shipPower = shipPower / 100; //to percents
