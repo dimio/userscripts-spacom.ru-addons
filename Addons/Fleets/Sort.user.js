@@ -10,17 +10,22 @@
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=map
+// @include      http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
-console.log('Spacom.ru::Addons::Fleets::Sort booted');
+/* eslint linebreak-style: ["error", "unix"]*/
+// console.log('Spacom.ru::Addons::Fleets::Sort booted');
 
-(function (window) {
+(function(window) {
 
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
     if (w.self !== w.top) {
         return;
+    }
+    if (!w.Addons) {
+        return false;
     }
 
     const flags = {
@@ -36,7 +41,7 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
     w.createNaviBarButton('Союзные', 3, 'showFleets({owner: \'peace\'}); Addons.Fleets.MarkOnMap.init()');
     w.createNaviBarButton('Пираты', 5, 'showFleets({owner: \'pirate\'}); Addons.Fleets.MarkOnMap.init()');
 
-    w.showFleets = function (opt) {
+    w.showFleets = function(opt) {
         const owner = opt.owner || 'own';
         const fleet_type = opt.fleet_type || 'fleet';
         const redraw = opt.redraw || null;
@@ -50,8 +55,8 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
 
         w.backlighted_fleets = {};
 
-        if (Addons.Fleets.MarkOnMap){
-            Addons.Fleets.MarkOnMap.makeMarkButtons();
+        if (w.Addons.Fleets.MarkOnMap) {
+            w.Addons.Fleets.MarkOnMap.makeMarkButtons();
         }
 
         // close the Fleets tab and purge filters
@@ -82,10 +87,10 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
         if (w.isObjNotEmpry(filters_stack)) {
             for (const i in filters_stack) {
                 if (filters_stack.hasOwnProperty(i)) {
-                    let filter = Object.keys(filters_stack[i]);
+                    const filter = Object.keys(filters_stack[i]);
                     // нужно сюда sortby передавать? проверить
                     sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filter,
-                                                   filters_stack[i][filter][0], filters_stack[i][filter][1]);
+                        filters_stack[i][filter][0], filters_stack[i][filter][1]);
                 }
             }
         }
@@ -93,8 +98,8 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
         // filtering selected
         if (w.isVariableDefined(filterby) && (sortby === 'no' || sortby === null)) {
             sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filterby, filter_key, exclude_f_flag);
-            if (w.isVariableDefined(filter_key)){
-                let filter = {};
+            if (w.isVariableDefined(filter_key)) {
+                const filter = {};
                 filter[filterby] = [];
                 filter[filterby].push(filter_key, exclude_f_flag);
                 filters_stack.push(filter);
@@ -120,9 +125,9 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
 
         // для корректной работы подсветки на карте - развернуть
         // отфильтрованный массив в хэш (уникальность ключей)
-        for (let i in sorted_fleets){
-            let fleet = sorted_fleets[i];
-            if (fleet.fleet_id in w.backlighted_fleets){
+        for (const i in sorted_fleets) {
+            const fleet = sorted_fleets[i];
+            if (fleet.fleet_id in w.backlighted_fleets) {
                 continue;
             }
             w.backlighted_fleets[fleet.fleet_id] = fleet;
@@ -158,22 +163,15 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
             }
             if (w.isObjNotEmpry(filter_keys)) {
                 showModalFilterList(filter_keys, owner, fleet_type, sortby, filterby);
-            }
-            else {
+            } else {
                 let message = 'Не найдены параметры для фильтрации. ';
                 message += 'Для сброса фильтров закройте и откройте заново текущую вкладку флотов.';
                 w.showSmallMessage(message);
             }
-        }
-        else if (exclude_f_flag === true) {
-            sorted_fleets = sorted_fleets.filter((fleet) => {
-                return fleet[filterby] !== filter_key;
-            });
-        }
-        else {
-            sorted_fleets = sorted_fleets.filter((fleet) => {
-                return fleet[filterby] === filter_key;
-            });
+        } else if (exclude_f_flag === true) {
+            sorted_fleets = sorted_fleets.filter(fleet => fleet[filterby] !== filter_key);
+        } else {
+            sorted_fleets = sorted_fleets.filter(fleet => fleet[filterby] === filter_key);
         }
 
         flags.filterby_last = filterby;
@@ -197,18 +195,17 @@ console.log('Spacom.ru::Addons::Fleets::Sort booted');
 
         w.showSmallMessage(message);
 
-        $('#filtering-list-checkbox').change(function (exclude_f_flag) {
+        $('#filtering-list-checkbox').change(function(exclude_f_flag) {
             if ($(this).is(':checked')) {
                 exclude_f_flag = true;
-            }
-            else {
+            } else {
                 exclude_f_flag = false;
             }
 
-            $('#data_modal > select').change(function () {
+            $('#data_modal > select').change(function() {
                 const select = $(this).val();
                 $('#data_modal > button').attr('onclick',
-                                               `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${filterby}',
 filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
             }).change();
@@ -227,7 +224,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
         return false;
     }
 
-    function drawFleetsTab (sorted_fleets) {
+    function drawFleetsTab(sorted_fleets) {
         if (sorted_fleets && w.isObjNotEmpry(sorted_fleets)) {
             $('#items_list').append(w.tmpl('fleets_title', sorted_fleets));
             for (const i in sorted_fleets) {
@@ -245,8 +242,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                     classes: 'qtip-dark tips',
                 },
             });
-        }
-        else {
+        } else {
             $('#items_list').html('<div class="player_fleet_title">Нет подходящих флотов</div>');
         }
     }
@@ -274,8 +270,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
             case 'turn': // by state
                 if (owner !== 'own') {
                     sorted_fleets.sort(sortOtherFleetsByState);
-                }
-                else {
+                } else {
                     sorted_fleets.sort(sortOwnFleetsByState).reverse();
                 }
                 break;
@@ -311,11 +306,9 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
         if (sortby && sortby !== 'weight' && flags.sortby_flag === sortby) {
             sorted_fleets.reverse();
             flags.sortby_flag = null;
-        }
-        else if (w.isVariableDefined(sortby)) {
+        } else if (w.isVariableDefined(sortby)) {
             flags.sortby_flag = sortby;
-        }
-        else {
+        } else {
             flags.sortby_flag = null;
         }
 
@@ -332,28 +325,28 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                     continue;
                 }
                 if (i === 'player_name') {
-                    if (owner === 'other' || owner === 'peace'){
+                    if (owner === 'other' || owner === 'peace') {
                         w.appendElemClickableIcon(div, 'fa-id-badge', `filter-by-${i}`, 'Отфильтровать по владельцу',
-                                                  `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                            `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${i}'})`);
                     }
 
                     i = 'fleet_name';
                     w.appendElemClickableIcon(div, 'fa-filter', `filter-by-${i}`, 'Отфильтровать',
-                                              `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                        `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${i}'})`);
                     continue;
                 }
 
                 w.appendElemClickableIcon(div, 'fa-filter', `filter-by-${i}`, 'Отфильтровать',
-                                          `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'no', filterby:'${i}'})`);
             }
         }
     }
 
     function makeClickableSortingIcons(divs, owner, fleet_type) {
-        for (let i in divs) { // i = sortby
+        for (const i in divs) { // i = sortby
             if (w.isVariableDefined(i)) {
                 const div = divs[i];
 
@@ -364,7 +357,7 @@ redraw:'1', sortby:'no', filterby:'${i}'})`);
                 }
 
                 w.makeElementClickable(div, 'fa-sort', `sort-by-${i}`, 'Отсортировать',
-                                       `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
+                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
 redraw:'1', sortby:'${i}'})`);
             }
         }
@@ -373,14 +366,10 @@ redraw:'1', sortby:'${i}'})`);
     function returnFleetsByOwner(owner, fleet_type, sorted_fleets) {
         switch (fleet_type) {
             case 'fleet': // default
-                sorted_fleets = sorted_fleets.filter((fleet) => {
-                    return fleet.owner === owner && +fleet.garrison !== 1;
-                });
+                sorted_fleets = sorted_fleets.filter(fleet => fleet.owner === owner && +fleet.garrison !== 1);
                 break;
             case 'garrison':
-                sorted_fleets = sorted_fleets.filter((fleet) => {
-                    return fleet.owner === owner && +fleet.garrison !== 0 && +fleet.weight !== 0;
-                });
+                sorted_fleets = sorted_fleets.filter(fleet => fleet.owner === owner && +fleet.garrison !== 0 && +fleet.weight !== 0);
                 break;
         }
 
@@ -409,43 +398,37 @@ redraw:'1', sortby:'${i}'})`);
 
         if (a.allow_explore > b.allow_explore) {
             return 1;
-        }
-        else if (a.allow_explore < b.allow_explore) {
+        } else if (a.allow_explore < b.allow_explore) {
             return -1;
         }
 
         if (a.allow_fly > b.allow_fly) {
             return 1;
-        }
-        else if (a.allow_fly < b.allow_fly) {
+        } else if (a.allow_fly < b.allow_fly) {
             return -1;
         }
 
         if (a.allow_transfer > b.allow_transfer) {
             return 1;
-        }
-        else if (a.allow_transfer < b.allow_transfer) {
+        } else if (a.allow_transfer < b.allow_transfer) {
             return -1;
         }
 
         if (a.allow_garrison > b.allow_garrison) {
             return 1;
-        }
-        else if (a.allow_garrison < b.allow_garrison) {
+        } else if (a.allow_garrison < b.allow_garrison) {
             return -1;
         }
 
         if (a.allow_station > b.allow_station) {
-            return -1;  // изучает аномалию - опускаем ниже
-        }
-        else if (a.allow_station < b.allow_station) {
+            return -1; // изучает аномалию - опускаем ниже
+        } else if (a.allow_station < b.allow_station) {
             return 1; // готов изучить или не станция - поднять
         }
 
         if (a.start_turn > b.start_turn) {
-            return -1;  // будет дольше в полёте - опустить
-        }
-        else if (a.start_turn < b.start_turn) {
+            return -1; // будет дольше в полёте - опустить
+        } else if (a.start_turn < b.start_turn) {
             return 1;
         }
 

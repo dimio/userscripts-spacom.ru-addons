@@ -11,20 +11,21 @@
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=map
 // @run-at       document-end
+/* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
-console.log( 'Spacom.ru::Addons::Fleets::MarkOnMap booted' );
+console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
 const MARK_SETTINGS = {
-    'FILL_COLOR': {
-        'own':      'blue',
-        'other':    'red',
-        'pirate':   'yellow',
-        'peace':    '#94ff00', //light-green
+    FILL_COLOR: {
+        own: 'blue',
+        other: 'red',
+        pirate: 'yellow',
+        peace: '#94ff00', //light-green
     },
-    'RADIUS':  0.8,
-    'OPACITY': 0.5,
+    RADIUS: 0.8,
+    OPACITY: 0.5,
 };
 
-(function (window) {
+(function(window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -32,34 +33,34 @@ const MARK_SETTINGS = {
         return;
     }
 
-    if ( !w.Addons.Fleets ){
+    if (!w.Addons.Fleets) {
         w.Addons.Fleets = {};
         // разобр. с насл. методов и обращению к ним
-        //Object.setPrototypeOf( w.Addons.Fleets, w.Addons );
+        // Object.setPrototypeOf( w.Addons.Fleets, w.Addons );
     }
 
-    if ( !w.Addons.Fleets.mark_circles ){
+    if (!w.Addons.Fleets.mark_circles) {
         w.Addons.Fleets.mark_circles = {};
     }
-    let circles = w.Addons.Fleets.mark_circles;
+    const circles = w.Addons.Fleets.mark_circles;
 
     w.Addons.Fleets.MarkOnMap = {
         buttonOn: null,
         buttonOff: null,
         enabled: false,
 
-        markFleetsOnMap: function (fleets){
-            if (w.backlighted_fleets){
-                for (let i in w.backlighted_fleets){
+        markFleetsOnMap(fleets) {
+            if (w.backlighted_fleets) {
+                for (const i in w.backlighted_fleets) {
                     const fleet = w.backlighted_fleets[i];
 
-                    if (fleet.fleet_id in circles){
+                    if (fleet.fleet_id in circles) {
                         continue;
                     }
 
                     const center = w.Addons.getFleetCenter({
-                        fleet: fleet,
-                        mode:  'mark',
+                        fleet,
+                        mode: 'mark',
                     });
 
                     circles[i] = w.Addons.createCircle({
@@ -74,44 +75,44 @@ const MARK_SETTINGS = {
                 w.Addons.drawCircles(circles);
             }
         },
-        unmarkFleetsOnMap: function (circles){
+        unmarkFleetsOnMap(circles) {
             circles = w.Addons.Fleets.mark_circles;
-            for (let i in circles){
-                scene.remove( circles[i] );
+            for (const i in circles) {
+                scene.remove(circles[i]);
                 delete circles[i];
             }
         },
-        getMarkFillColor: function (fleet_owner){
+        getMarkFillColor(fleet_owner) {
             return MARK_SETTINGS.FILL_COLOR[fleet_owner] || 'white';
         },
 
-        turnOn: function(){
+        turnOn() {
             this.enabled = true;
             this.markFleetsOnMap();
             scene.renderAll();
         },
-        turnOff: function(){
-            if (this.enabled){
+        turnOff() {
+            if (this.enabled) {
                 this.unmarkFleetsOnMap();
                 scene.renderAll();
             }
         },
-        makeMarkButtons: function (){
+        makeMarkButtons() {
             const self = this;
             // Addons.waitMenu.bind(this);
             // разобр., почему не работает this.waitMenu, хотя waitMenu унаследована и вызывается так:
-            //Addons.Fleets.waitMenu( $('#items_list > div.row.player_fleet_title'), function(menu) {
-            w.Addons.waitMenu( $('#items_list > div.row.player_fleet_title'), function(menu) {
-                self.buttonOn = w.createActionButton('Пометить на карте', 'fa fa-eye', 'map-backlight' );
-                self.buttonOn.on( "click", self.turnOn.bind(self) );
+            // Addons.Fleets.waitMenu( $('#items_list > div.row.player_fleet_title'), function(menu) {
+            w.Addons.waitMenu($('#items_list > div.row.player_fleet_title'), (menu) => {
+                self.buttonOn = w.createActionButton('Пометить на карте', 'fa fa-eye', 'map-backlight');
+                self.buttonOn.on('click', self.turnOn.bind(self));
 
-                self.buttonOff = w.createActionButton('Убрать пометки', 'fa fa-eye-slash', 'map-backlight' );
-                self.buttonOff.on( "click", self.turnOff.bind(self) );
+                self.buttonOff = w.createActionButton('Убрать пометки', 'fa fa-eye-slash', 'map-backlight');
+                self.buttonOff.on('click', self.turnOff.bind(self));
 
-                w.Addons.replaceElemContent( $('div.col-xs-4.col-md-2.fleet_actions')[0], self.buttonOn, self.buttonOff);
-            } );
+                w.Addons.replaceElemContent($('div.col-xs-4.col-md-2.fleet_actions')[0], self.buttonOn, self.buttonOff);
+            });
         },
-        init: function () {
+        init() {
             this.makeMarkButtons();
         },
     };
