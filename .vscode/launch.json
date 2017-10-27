@@ -8,6 +8,7 @@
         "request": "launch",
         "name": "Launch Chrome against Spacom",
         "url": "https://spacom.ru",
+        //"url": "http://localhost:8020/${relativeFile}",
         "webRoot": "${workspaceRoot}"
     }]
 }

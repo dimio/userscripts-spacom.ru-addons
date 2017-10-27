@@ -17,8 +17,10 @@
 //
 // An "All levels" addon - maked by segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
 // console.log("Spacom::Addons::Design::Extensions booted");
-const ERR_MSG_NOLIB = 'Для работы дополнений необходимо установить Spacom.ru::Addons:<br>' +
-    'https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js';
+const ERR_MSG = {
+    NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.ru::Addons:<br>
+    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
+};
 
 (function(window) {
     window.unsafeWindow = window.unsafeWindow || window;
@@ -27,8 +29,8 @@ const ERR_MSG_NOLIB = 'Для работы дополнений необходи
     if (w.self !== w.top) {
         return;
     }
-    if (!w.Addons) {
-        w.showSmallMessage(ERR_MSG_NOLIB);
+    if (!w.Addons.Main) {
+        w.showSmallMessage(ERR_MSG.NO_LIB);
         return;
     }
     if (!w.Addons.Design) {
@@ -119,7 +121,7 @@ const ERR_MSG_NOLIB = 'Для работы дополнений необходи
             const _Component = w.Component;
             w.Component = function() {
                 // console.log(this);
-                _Component.apply(this);
+                _Component.apply(this, arguments);
                 const id = parseInt(this.component_id, 10);
                 this.known_level = w.design.template_components[id].known_level;
             };
@@ -134,7 +136,7 @@ const ERR_MSG_NOLIB = 'Для работы дополнений необходи
             const template_components = w.design.template_components;
             for (const i in template_components) {
                 if (template_components.hasOwnProperty(i)) {
-                    template_components[i].known_level = template_components[i].max_level;
+                    template_components[i].max_level = 100;
                 }
             }
             w.design.draw();

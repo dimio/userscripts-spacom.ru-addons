@@ -16,25 +16,21 @@
  * Based on "Spacom addons" by segrey (
  * https://greasyfork.org/en/scripts/27897-spacom-addons
  */
-console.log('Spacom.ru::Addons booted');
+// console.log('Spacom.ru::Addons booted');
 
 (function(window) {
-    'use strict';
-
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
     if (w.self !== w.top) {
         return;
     }
-
     if (!w.Addons) {
         w.Addons = {};
     }
 
     w.Addons = {
-
-        waitFor: function(obj, prop, callback) {
+        waitFor(obj, prop, callback) {
             const token = setInterval(() => {
                 if (obj[prop] !== undefined) {
                     clearInterval(token);
@@ -42,8 +38,7 @@ console.log('Spacom.ru::Addons booted');
                 }
             }, 0);
         },
-
-        waitMenu: function(menu, callback) {
+        waitMenu(menu, callback) {
             const token = setInterval(() => {
                 if (typeof menu !== undefined) {
                     if (w.isVariableDefined(menu.length) && menu.length > 0) {
@@ -53,8 +48,7 @@ console.log('Spacom.ru::Addons booted');
                 }
             }, 0);
         },
-
-        replaceElemContent: function(elem) {
+        replaceElemContent(elem) {
             $(elem).empty();
 
             for (let i = 1; i < arguments.length; i++) {
@@ -64,7 +58,7 @@ console.log('Spacom.ru::Addons booted');
             return elem;
         },
 
-        createCircle: function(opt) {
+        createCircle(opt) {
             const x = opt.x;
             const y = opt.y;
 
@@ -89,18 +83,18 @@ console.log('Spacom.ru::Addons booted');
 
             return circle;
         },
-        drawCircle: function(circle) {
+        drawCircle(circle) {
             circle.set({
                 visible: true
             });
         },
-        drawCircles: function(circles) {
+        drawCircles(circles) {
             for (let i in circles) {
                 this.drawCircle(circles[i]);
             }
         },
 
-        getFleetCenter: function(opt) {
+        getFleetCenter(opt) {
             const fleet = opt.fleet;
             const mode = opt.mode;
 
@@ -138,7 +132,7 @@ console.log('Spacom.ru::Addons booted');
         clickable_icon.title = title;
         clickable_icon.setAttribute('onclick', `${callback}; return false;`);
         clickable_icon.innerHTML = ` <i class="fa ${icon}" id="${css_name}"></i></a>`;
-        //clickable_icon.style.color = elem.css('color');
+        // clickable_icon.style.color = elem.css('color');
 
         elem.append(clickable_icon);
 
@@ -157,13 +151,13 @@ console.log('Spacom.ru::Addons booted');
         const last = $(`#navi > div:nth-child(${last_el_num})`);
 
         $(last).parent().css({
-            //width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
-            'width': 'fit-content',
+            // width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
+            width: 'fit-content',
             'padding-left': '5px',
             'padding-right': '5px',
         });
         $(last).parent().children('*').css({
-            //'margin-left': '10px',
+            // 'margin-left': '10px',
             'margin-right': '5px',
         });
 
@@ -204,10 +198,10 @@ return false;"><a href="#">${name}</a></div>`);
     };
 
     w.sortAlphabetically = function(a, b) {
-        //const a_cmp = a.toUpperCase();
-        //const b_cmp = b.toUpperCase();
+        // const a_cmp = a.toUpperCase();
+        // const b_cmp = b.toUpperCase();
 
-        //return (a_cmp < b_cmp) ? -1 : (a_cmp > b_cmp) ? 1 : 0;
+        // return (a_cmp < b_cmp) ? -1 : (a_cmp > b_cmp) ? 1 : 0;
 
         // in IE10 - use localeCompare from Intl.JS
         return a.localeCompare(b);

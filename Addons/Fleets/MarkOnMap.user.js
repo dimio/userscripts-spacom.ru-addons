@@ -13,7 +13,7 @@
 // @run-at       document-end
 /* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
-console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
+//console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
 const MARK_SETTINGS = {
     FILL_COLOR: {
         own: 'blue',
@@ -25,6 +25,11 @@ const MARK_SETTINGS = {
     OPACITY: 0.5,
 };
 
+const ERR_MSG = {
+    NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.ru::Addons:<br>
+    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
+};
+
 (function(window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
@@ -32,11 +37,12 @@ const MARK_SETTINGS = {
     if (w.self !== w.top) {
         return;
     }
-
+    if (!w.Addons) {
+        w.showSmallMessage(ERR_MSG.NO_LIB);
+        return;
+    }
     if (!w.Addons.Fleets) {
-        w.Addons.Fleets = {};
-        // разобр. с насл. методов и обращению к ним
-        // Object.setPrototypeOf( w.Addons.Fleets, w.Addons );
+        return;
     }
 
     if (!w.Addons.Fleets.mark_circles) {

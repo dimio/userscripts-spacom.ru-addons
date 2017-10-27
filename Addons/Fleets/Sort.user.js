@@ -13,11 +13,15 @@
 // @include      http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
-/* eslint linebreak-style: ["error", "unix"]*/
 // console.log('Spacom.ru::Addons::Fleets::Sort booted');
+const ERR_MSG = {
+    NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.ru::Addons:<br>
+    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
+    NO_FILTER_PARAMS: `Не найдены параметры для фильтрации.
+    Для сброса фильтров закройте и откройте заново текущую вкладку флотов.`,
+};
 
 (function(window) {
-
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -25,7 +29,11 @@
         return;
     }
     if (!w.Addons) {
-        return false;
+        w.showSmallMessage(ERR_MSG.NO_LIB);
+        return;
+    }
+    if (!w.Addons.Fleets) {
+        w.Addons.Fleets = {};
     }
 
     const flags = {
@@ -35,9 +43,14 @@
     };
     const filters_stack = [];
 
-    $('#navi > div:nth-child(3)').attr('onclick', 'showFleets({owner: \'other\'}); Addons.Fleets.MarkOnMap.init(); return false;');
-    $('#navi > div:nth-child(2)').attr('onclick', 'showFleets({owner: \'own\'}); Addons.Fleets.MarkOnMap.init(); return false;');
-    w.createNaviBarButton('Гарнизон', 1, 'showFleets({owner: \'own\', fleet_type: \'garrison\'}); Addons.Fleets.MarkOnMap.init()');
+    $('#navi > div:nth-child(2)').attr('onclick',
+        `showFleets({owner:'own'});
+        ${w.Addons.Fleets.MarkOnMap} : ${w.Addons.Fleets.MarkOnMap.init()}; ? ''
+        return false;`);
+    $('#navi > div:nth-child(3)').attr('onclick',
+        'showFleets({owner: \'other\'}); Addons.Fleets.MarkOnMap.init(); return false;');
+    w.createNaviBarButton('Гарнизон', 1,
+    'showFleets({owner: \'own\', fleet_type: \'garrison\'}); Addons.Fleets.MarkOnMap.init()');
     w.createNaviBarButton('Союзные', 3, 'showFleets({owner: \'peace\'}); Addons.Fleets.MarkOnMap.init()');
     w.createNaviBarButton('Пираты', 5, 'showFleets({owner: \'pirate\'}); Addons.Fleets.MarkOnMap.init()');
 
@@ -97,7 +110,10 @@
 
         // filtering selected
         if (w.isVariableDefined(filterby) && (sortby === 'no' || sortby === null)) {
-            sorted_fleets = filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filterby, filter_key, exclude_f_flag);
+            sorted_fleets = filterFleetsBy(
+                sorted_fleets, owner, fleet_type,
+                sortby, filterby, filter_key, exclude_f_flag
+            );
             if (w.isVariableDefined(filter_key)) {
                 const filter = {};
                 filter[filterby] = [];
@@ -150,8 +166,9 @@
         w.backlighted_fleets = {};
     }
 
-    function filterFleetsBy(sorted_fleets, owner, fleet_type, sortby, filterby, filter_key, exclude_f_flag) {
+    function filterFleetsBy(fleets, owner, fleet_type, sortby, filterby, filter_key, exclude_f_flag) {
         const filter_keys = {};
+        let sorted_fleets = fleets;
 
         if (filter_key === null) {
             for (const i in sorted_fleets) {
@@ -163,15 +180,20 @@
             }
             if (w.isObjNotEmpry(filter_keys)) {
                 showModalFilterList(filter_keys, owner, fleet_type, sortby, filterby);
-            } else {
-                let message = 'Не найдены параметры для фильтрации. ';
-                message += 'Для сброса фильтров закройте и откройте заново текущую вкладку флотов.';
-                w.showSmallMessage(message);
             }
-        } else if (exclude_f_flag === true) {
-            sorted_fleets = sorted_fleets.filter(fleet => fleet[filterby] !== filter_key);
-        } else {
-            sorted_fleets = sorted_fleets.filter(fleet => fleet[filterby] === filter_key);
+            else {
+                w.showSmallMessage(ERR_MSG.NO_FILTER_PARAMS);
+            }
+        }
+        else if (exclude_f_flag === true) {
+            sorted_fleets = sorted_fleets.filter(fleet =>
+                fleet[filterby] !== filter_key
+            );
+        }
+        else {
+            sorted_fleets = sorted_fleets.filter(fleet =>
+                fleet[filterby] === filter_key
+            );
         }
 
         flags.filterby_last = filterby;
@@ -198,7 +220,8 @@
         $('#filtering-list-checkbox').change(function(exclude_f_flag) {
             if ($(this).is(':checked')) {
                 exclude_f_flag = true;
-            } else {
+            }
+            else {
                 exclude_f_flag = false;
             }
 
@@ -242,7 +265,8 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                     classes: 'qtip-dark tips',
                 },
             });
-        } else {
+        }
+        else {
             $('#items_list').html('<div class="player_fleet_title">Нет подходящих флотов</div>');
         }
     }
@@ -270,7 +294,8 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
             case 'turn': // by state
                 if (owner !== 'own') {
                     sorted_fleets.sort(sortOtherFleetsByState);
-                } else {
+                }
+                else {
                     sorted_fleets.sort(sortOwnFleetsByState).reverse();
                 }
                 break;
@@ -306,9 +331,11 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
         if (sortby && sortby !== 'weight' && flags.sortby_flag === sortby) {
             sorted_fleets.reverse();
             flags.sortby_flag = null;
-        } else if (w.isVariableDefined(sortby)) {
+        }
+        else if (w.isVariableDefined(sortby)) {
             flags.sortby_flag = sortby;
-        } else {
+        }
+        else {
             flags.sortby_flag = null;
         }
 
@@ -363,13 +390,18 @@ redraw:'1', sortby:'${i}'})`);
         }
     }
 
-    function returnFleetsByOwner(owner, fleet_type, sorted_fleets) {
+    function returnFleetsByOwner(owner, fleet_type, fleets) {
+        let sorted_fleets = fleets;
         switch (fleet_type) {
             case 'fleet': // default
-                sorted_fleets = sorted_fleets.filter(fleet => fleet.owner === owner && +fleet.garrison !== 1);
+                sorted_fleets = sorted_fleets.filter(fleet =>
+                    fleet.owner === owner && +fleet.garrison !== 1
+                );
                 break;
             case 'garrison':
-                sorted_fleets = sorted_fleets.filter(fleet => fleet.owner === owner && +fleet.garrison !== 0 && +fleet.weight !== 0);
+                sorted_fleets = sorted_fleets.filter(fleet =>
+                    fleet.owner === owner && +fleet.garrison !== 0 && +fleet.weight !== 0
+                );
                 break;
         }
 
@@ -382,58 +414,49 @@ redraw:'1', sortby:'${i}'})`);
     }
 
     function sortOwnFleetsByState(a, b) {
-        // Order:
-        /* const order = [ //qw
-            'allow_bomb',
-            'allow_invasion',
-            'allow_settle',
-            'allow_explore',
-            'allow_fly',
-            'allow_transfer',
-            'allow_garrison',
-            'allow_station',
-            'start_turn',
-        ];*/
-        // return w.sortNumerically( a[order[j]], b[order[j]] );
-
         if (a.allow_explore > b.allow_explore) {
             return 1;
-        } else if (a.allow_explore < b.allow_explore) {
+        }
+        else if (a.allow_explore < b.allow_explore) {
             return -1;
         }
 
         if (a.allow_fly > b.allow_fly) {
             return 1;
-        } else if (a.allow_fly < b.allow_fly) {
+        }
+        else if (a.allow_fly < b.allow_fly) {
             return -1;
         }
 
         if (a.allow_transfer > b.allow_transfer) {
             return 1;
-        } else if (a.allow_transfer < b.allow_transfer) {
+        }
+        else if (a.allow_transfer < b.allow_transfer) {
             return -1;
         }
 
         if (a.allow_garrison > b.allow_garrison) {
             return 1;
-        } else if (a.allow_garrison < b.allow_garrison) {
+        }
+        else if (a.allow_garrison < b.allow_garrison) {
             return -1;
         }
 
         if (a.allow_station > b.allow_station) {
             return -1; // изучает аномалию - опускаем ниже
-        } else if (a.allow_station < b.allow_station) {
+        }
+        else if (a.allow_station < b.allow_station) {
             return 1; // готов изучить или не станция - поднять
         }
 
         if (a.start_turn > b.start_turn) {
             return -1; // будет дольше в полёте - опустить
-        } else if (a.start_turn < b.start_turn) {
+        }
+        else if (a.start_turn < b.start_turn) {
             return 1;
         }
 
         return 0;
-
     }
 
     function sortFleetsByFleetName(a, b) {
