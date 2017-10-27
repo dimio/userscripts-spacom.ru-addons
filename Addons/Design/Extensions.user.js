@@ -46,19 +46,11 @@ const ERR_MSG = {
             designInfoTemplate = designInfoTemplate.replace("lazer_defence'] + '%&nbsp;' : '' %>",
                 "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Приведённые очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&nbsp;' : '' %>");
             designInfoTemplate = designInfoTemplate.replace("cannon_defence'] + '&nbsp;' : '' %>",
-<<<<<<< HEAD
                 "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
             designInfoTemplate = designInfoTemplate.replace(/<br\/>\s*<button/,
                 "<%= ( params['ship_power'] > '0') ? '<i class=\"fa fa-percent\" title=\"Примерная боевая эффективность корабля\"></i>&nbsp;' + params['ship_power'] : '' %> <br><br><button");
 
             document.getElementById('design_info_template').innerHTML = designInfoTemplate;
-=======
-                                                            "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
-            designInfoTemplate = designInfoTemplate.replace(/<br\/>\s*<button/,
-                                                            "<%= ( params['ship_power'] > '0') ? '<i class=\"fa fa-percent\" title=\"Примерная боевая эффективность корабля\"></i>&nbsp;' + params['ship_power'] : '' %> <br><br><button");
-
-            document.getElementById("design_info_template").innerHTML = designInfoTemplate;
->>>>>>> 4fb61aa3cdc822faa012bd1b9bf24199cb4b6af2
         },
         calcLaserPowerSumm(params) {
             return params.lazer_power * params.lazer_shots;

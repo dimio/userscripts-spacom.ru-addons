@@ -44,15 +44,15 @@ const ERR_MSG = {
     const filters_stack = [];
 
     $('#navi > div:nth-child(2)').attr('onclick',
-        `showFleets({owner:'own'});
-        ${w.Addons.Fleets.MarkOnMap} : ${w.Addons.Fleets.MarkOnMap.init()}; ? ''
-        return false;`);
+        'showFleets({owner:\'own\'});w.Addons.Fleets.MarkOnMap.init()};return false;');
     $('#navi > div:nth-child(3)').attr('onclick',
-        'showFleets({owner: \'other\'}); Addons.Fleets.MarkOnMap.init(); return false;');
+        'showFleets({owner:\'other\'});Addons.Fleets.MarkOnMap.init();return false;');
     w.createNaviBarButton('Гарнизон', 1,
-    'showFleets({owner: \'own\', fleet_type: \'garrison\'}); Addons.Fleets.MarkOnMap.init()');
-    w.createNaviBarButton('Союзные', 3, 'showFleets({owner: \'peace\'}); Addons.Fleets.MarkOnMap.init()');
-    w.createNaviBarButton('Пираты', 5, 'showFleets({owner: \'pirate\'}); Addons.Fleets.MarkOnMap.init()');
+        'showFleets({owner:\'own\',fleet_type:\'garrison\'});Addons.Fleets.MarkOnMap.init();return false;');
+    w.createNaviBarButton('Союзные', 3,
+        'showFleets({owner:\'peace\'});Addons.Fleets.MarkOnMap.init();return false;');
+    w.createNaviBarButton('Пираты', 5,
+        'showFleets({owner:\'pirate\'});Addons.Fleets.MarkOnMap.init();return false;');
 
     w.showFleets = function(opt) {
         const owner = opt.owner || 'own';
