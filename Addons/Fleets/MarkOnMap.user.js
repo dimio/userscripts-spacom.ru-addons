@@ -13,7 +13,7 @@
 // @run-at       document-end
 /* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
-//console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
+// console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
 const MARK_SETTINGS = {
     FILL_COLOR: {
         own: 'blue',

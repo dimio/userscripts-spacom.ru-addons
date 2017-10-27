@@ -35,6 +35,7 @@ const ERR_MSG = {
     if (!w.Addons.Fleets) {
         w.Addons.Fleets = {};
     }
+    const Addons = w.Addons;
 
     const flags = {
         sortby_last: null,
@@ -68,8 +69,8 @@ const ERR_MSG = {
 
         w.backlighted_fleets = {};
 
-        if (w.Addons.Fleets.MarkOnMap) {
-            w.Addons.Fleets.MarkOnMap.makeMarkButtons();
+        if (Addons.Fleets.MarkOnMap) {
+            Addons.Fleets.MarkOnMap.makeMarkButtons();
         }
 
         // close the Fleets tab and purge filters
@@ -353,15 +354,24 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                 }
                 if (i === 'player_name') {
                     if (owner === 'other' || owner === 'peace') {
-                        w.appendElemClickableIcon(div, 'fa-id-badge', `filter-by-${i}`, 'Отфильтровать по владельцу',
-                            `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
-redraw:'1', sortby:'no', filterby:'${i}'})`);
+                        Addons.appendElemClickableIcon({
+                            elem: div,
+                            icon: 'fa-id-badge',
+                            css_name: `filter-by-${i}`,
+                            title: 'Отфильтровать по владельцу',
+                            callback: `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',redraw:'1', sortby:'no', filterby:'${i}'})`,
+                        });
                     }
 
                     i = 'fleet_name';
-                    w.appendElemClickableIcon(div, 'fa-filter', `filter-by-${i}`, 'Отфильтровать',
-                        `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
-redraw:'1', sortby:'no', filterby:'${i}'})`);
+                    Addons.appendElemClickableIcon({
+                        elem: div,
+                        icon: 'fa-filter',
+                        css_name: `filter-by-${i}`,
+                        title: 'Отфильтровать',
+                        callback: `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',redraw:'1', sortby:'no', filterby:'${i}'})`,
+                    });
+
                     continue;
                 }
 

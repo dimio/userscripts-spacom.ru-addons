@@ -12,10 +12,10 @@
 // @match        http*://spacom.ru/*
 // @run-at       document-start
 // ==/UserScript==
-/*
+/**
  * Based on "Spacom addons" by segrey (
  * https://greasyfork.org/en/scripts/27897-spacom-addons
- */
+**/
 // console.log('Spacom.ru::Addons booted');
 
 (function(window) {
@@ -40,7 +40,7 @@
         },
         waitMenu(menu, callback) {
             const token = setInterval(() => {
-                if (typeof menu !== undefined) {
+                if (typeof menu !== 'undefined') {
                     if (w.isVariableDefined(menu.length) && menu.length > 0) {
                         clearInterval(token);
                         callback(menu);
@@ -63,34 +63,36 @@
             const y = opt.y;
 
             const radius = opt.radius || 3;
-            const fill = opt.fill || 'rgb(40,100,40)'; //light-green
+            const fill = opt.fill || 'rgb(40,100,40)'; // light-green
             const opacity = opt.opacity || 0.2;
 
-            const circle = new fabric.Circle({
+            const circle = new w.fabric.Circle({
                 left: x,
                 top: y,
                 radius: radius * w.box_size,
-                fill: fill,
-                opacity: opacity,
+                fill,
+                opacity,
                 originX: 'center',
                 originY: 'center',
                 selectable: false,
                 visible: false,
             });
 
-            scene.add(circle);
-            scene.sendToBack(circle);
+            w.scene.add(circle);
+            w.scene.sendToBack(circle);
 
             return circle;
         },
         drawCircle(circle) {
             circle.set({
-                visible: true
+                visible: true,
             });
         },
         drawCircles(circles) {
-            for (let i in circles) {
-                this.drawCircle(circles[i]);
+            for (const i in circles) {
+                if (circles.hasOwnProperty(i)) {
+                    this.drawCircle(circles[i]);
+                }
             }
         },
 
@@ -100,43 +102,44 @@
 
             let center;
 
-            if (mode === 'mark') {
-                center = w.getCenterXY(fleet.x, fleet.y);
-                return center;
-            }
-            // or 'viewzone' and ...
-            if (+fleet.turn === 0) {
-                center = w.getCenterXY(fleet.x, fleet.y);
-            } else {
-                center = { x: fleet.start_x, y: fleet.start_y };
+            switch (mode) {
+                case 'mark':
+                    center = w.getCenterXY(fleet.x, fleet.y);
+                    break;
+
+                case 'viewzone':
+                    if (+fleet.turn === 0) {
+                        center = w.getCenterXY(fleet.x, fleet.y);
+                    }
+                    else {
+                        center = { x: fleet.start_x, y: fleet.start_y };
+                    }
+                    break;
             }
 
             return center;
         },
 
-    };
+        appendElemClickableIcon(opt) {
+            const elem = opt.elem;
+            const icon = opt.icon;
+            const css_name = opt.css_name;
+            const title = opt.title;
+            const callback = opt.callback;
 
-    w.appendOnclickEvent = function(i, elem, callback) {
-        const last_onclick = $(elem).attr('onclick');
-        const new_onclick = `${callback}; ${last_onclick}`;
-        $(elem).attr('onclick', new_onclick);
+            const appended_elem = $(elem);
 
-        return elem;
-    };
+            const clickable_icon = document.createElement('a');
+            clickable_icon.href = '#';
+            clickable_icon.title = title;
+            clickable_icon.setAttribute('onclick', `${callback};return false;`);
+            clickable_icon.innerHTML = ` <i class="fa ${icon}" id="${css_name}"></i></a>`;
 
-    w.appendElemClickableIcon = function(elem, icon, css_name, title, callback) {
-        elem = $(elem);
+            appended_elem.append(clickable_icon);
 
-        const clickable_icon = document.createElement('a');
-        clickable_icon.href = '#';
-        clickable_icon.title = title;
-        clickable_icon.setAttribute('onclick', `${callback}; return false;`);
-        clickable_icon.innerHTML = ` <i class="fa ${icon}" id="${css_name}"></i></a>`;
-        // clickable_icon.style.color = elem.css('color');
+            return elem;
+        },
 
-        elem.append(clickable_icon);
-
-        return elem;
     };
 
     w.makeElementClickable = function(elem, icon, css_name, title, callback) {
@@ -233,11 +236,19 @@ return false;"><a href="#">${name}</a></div>`);
 
     w.toggleFlag = function(flag) {
         if (this.isVariableDefined(flag)) {
-            flag = null;
-            return flag;
+            return null;
         }
-        flag = true;
-        return flag;
+        return true;
     };
 
 })(window);
+
+/*
+     w.appendOnclickEvent = function(i, elem, callback) {
+        const last_onclick = $(elem).attr('onclick');
+        const new_onclick = `${callback}; ${last_onclick}`;
+        $(elem).attr('onclick', new_onclick);
+
+        return elem;
+    };
+*/
