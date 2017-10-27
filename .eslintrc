@@ -1,6 +1,6 @@
 {
     "extends": [
-    	"./node_modules/eslint-config-dimio/index.js",
+        "./node_modules/eslint-config-dimio/index.js",
     ],
     "env": {
         "browser": true,
