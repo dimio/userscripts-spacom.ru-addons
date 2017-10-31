@@ -95,7 +95,7 @@ const ANOMALY_LABEL = {
 
         findAnomalies: function () {
 
-            if ( !w.isObjNotEmpry(anomalies_circles) ){
+            if ( !Addons.isObjNotEmpry(anomalies_circles) ){
                 const explored_stars = w.map.stars.slice().filter((star) => {
                     return +star.explored === 1;
                 });

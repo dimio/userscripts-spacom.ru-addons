@@ -29,7 +29,7 @@ const ERR_MSG = {
     if (w.self !== w.top) {
         return;
     }
-    if (!w.Addons.Main) {
+    if (!w.Addons) {
         w.showSmallMessage(ERR_MSG.NO_LIB);
         return;
     }

@@ -28,8 +28,9 @@
     if (!w.Addons) {
         w.Addons = {};
     }
+    let Addons = w.Addons;
 
-    w.Addons = {
+    Addons = {
         waitFor(obj, prop, callback) {
             const token = setInterval(() => {
                 if (obj[prop] !== undefined) {
@@ -47,15 +48,6 @@
                     }
                 }
             }, 0);
-        },
-        replaceElemContent(elem) {
-            $(elem).empty();
-
-            for (let i = 1; i < arguments.length; i++) {
-                $(elem).append(arguments[i]);
-            }
-
-            return elem;
         },
 
         createCircle(opt) {
@@ -120,7 +112,33 @@
             return center;
         },
 
-        appendElemClickableIcon(opt) {
+        isVariableDefined(value) {
+            if (typeof value === 'undefined') {
+                return false; // retrun value >>> 0
+            }
+            if (value === null) {
+                return false;
+            }
+            return true;
+        },
+        isObjNotEmpry(obj) {
+            if (Object.values(obj).filter(this.isVariableDefined).length > 0) {
+                return true;
+            }
+            return false;
+        },
+        /*
+        toggleFlag(flag) {
+            if (this.isVariableDefined(flag)) {
+                return null;
+            }
+            return true;
+        },
+        */
+    };
+
+    Addons.HTMLElement = {
+        appendClickableIcon(opt) {
             const elem = opt.elem;
             const icon = opt.icon;
             const css_name = opt.css_name;
@@ -139,106 +157,93 @@
 
             return elem;
         },
+        makeClickable(opt) {
+            const elem = opt.elem;
+            const icon = opt.icon;
+            const css_name = opt.css_name;
+            const title = opt.title;
+            const callback = opt.callback;
 
+            let text = elem.innerText;
+            if (icon) { text = `<i id="${css_name}" class="fa ${icon}"></i> ${text}`; }
+            elem.innerHTML = `<a href="#" title="${title}" onclick="${callback}; return false;">${text}</a>`;
+
+            return elem;
+        },
+        /*
+        appendElemActionButton(button, parent_elem) {
+            parent_elem.append(button);
+
+            return parent_elem;
+        },
+        */
+        replaceContent(elem) {
+            $(elem).empty();
+
+            for (let i = 1; i < arguments.length; i++) {
+                $(elem).append(arguments[i]);
+            }
+
+            return elem;
+        },
+
+        createNaviBarButton(name, last_el_num, callback) {
+            const last = $(`#navi > div:nth-child(${last_el_num})`);
+
+            $(last).parent().css({
+                // width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
+                width: 'fit-content',
+                'padding-left': '5px',
+                'padding-right': '5px',
+            });
+            $(last).parent().children('*').css({
+                // 'margin-left': '10px',
+                'margin-right': '5px',
+            });
+
+            const next = $(`<div class="${last.attr('class')}" onclick="${callback};"><a href="#">${name}</a></div>`);
+            last.after(next);
+
+            return next;
+        },
+        createActionButton(btn_text, css_class, css_id) {
+            const button = $(`<button class="btn-action" id="${css_id}" onclick="return false;">
+            <i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
+            <br></button>`);
+
+            return button;
+        },
+        createMapButton(css, id, title) {
+            const last = $('#radar + div');
+            const next = $(`<div id="${id}" title="${title}"><i class="fa ${css} fa-2x"></i></div>`).css({
+                'z-index': last.css('z-index'),
+                position: last.css('position'),
+                cursor: last.css('cursor'),
+                color: last.css('color'),
+                right: last.css('right'),
+                bottom: `${parseInt(last.css('bottom'), 10) + 40}px`,
+            });
+            last.before(next);
+
+            return next;
+        },
     };
 
-    w.makeElementClickable = function(elem, icon, css_name, title, callback) {
-        let text = elem.innerText;
-        if (icon) { text = `<i id="${css_name}" class="fa ${icon}"></i> ${text}`; }
-        elem.innerHTML = `<a href="#" title="${title}" onclick="${callback}; return false;">${text}</a>`;
+    Addons.Sort = {
+        sortAlphabetically(a, b) {
+            // const a_cmp = a.toUpperCase();
+            // const b_cmp = b.toUpperCase();
+            // return (a_cmp < b_cmp) ? -1 : (a_cmp > b_cmp) ? 1 : 0;
 
-        return elem;
-    };
+            // in IE10 - use localeCompare from Intl.JS
+            return a.localeCompare(b);
+        },
+        sortNumerically(a, b) {
+            const a_cmp = parseFloat(a, 10);
+            const b_cmp = parseFloat(b, 10);
 
-    w.createNaviBarButton = function(name, last_el_num, callback) {
-        const last = $(`#navi > div:nth-child(${last_el_num})`);
-
-        $(last).parent().css({
-            // width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
-            width: 'fit-content',
-            'padding-left': '5px',
-            'padding-right': '5px',
-        });
-        $(last).parent().children('*').css({
-            // 'margin-left': '10px',
-            'margin-right': '5px',
-        });
-
-        const next = $(`<div class="${last.attr('class')}" onclick="${callback};
-return false;"><a href="#">${name}</a></div>`);
-        last.after(next);
-
-        return next;
-    };
-
-    w.createActionButton = function(btn_text, css_class, css_id) {
-        const button = $(`<button class="btn-action" id="${css_id}" onclick="return false;">
-<i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
-<br></button>`);
-
-        return button;
-    };
-
-    w.appendElemActionButton = function(button, parent_el) {
-        parent_el.append(button);
-
-        return parent_el;
-    };
-
-    w.createMapButton = function(css, id, title) {
-        const last = $('#radar + div');
-        const next = $(`<div id="${id}" title="${title}"><i class="fa ${css} fa-2x"></i></div>`).css({
-            'z-index': last.css('z-index'),
-            position: last.css('position'),
-            cursor: last.css('cursor'),
-            color: last.css('color'),
-            right: last.css('right'),
-            bottom: `${parseInt(last.css('bottom'), 10) + 40}px`,
-        });
-        last.before(next);
-
-        return next;
-    };
-
-    w.sortAlphabetically = function(a, b) {
-        // const a_cmp = a.toUpperCase();
-        // const b_cmp = b.toUpperCase();
-
-        // return (a_cmp < b_cmp) ? -1 : (a_cmp > b_cmp) ? 1 : 0;
-
-        // in IE10 - use localeCompare from Intl.JS
-        return a.localeCompare(b);
-    };
-
-    w.sortNumerically = function(a, b) {
-        const a_cmp = parseFloat(a, 10);
-        const b_cmp = parseFloat(b, 10);
-
-        return a_cmp - b_cmp;
-    };
-
-    w.isObjNotEmpry = function(obj) {
-        if (Object.values(obj).filter(this.isVariableDefined).length > 0) {
-            return true;
-        }
-        return false;
-    };
-
-    w.isVariableDefined = function(value) {
-        if (typeof value === 'undefined') {
-            return false; // retrun value >>> 0
-        }
-        if (value === null) {
-            return false;
-        }
-        return true;
-    };
-
-    w.toggleFlag = function(flag) {
-        if (this.isVariableDefined(flag)) {
-            return null;
-        }
-        return true;
+            return a_cmp - b_cmp;
+        },
     };
 
 })(window);

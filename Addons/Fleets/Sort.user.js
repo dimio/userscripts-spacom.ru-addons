@@ -48,11 +48,11 @@ const ERR_MSG = {
         'showFleets({owner:\'own\'});w.Addons.Fleets.MarkOnMap.init()};return false;');
     $('#navi > div:nth-child(3)').attr('onclick',
         'showFleets({owner:\'other\'});Addons.Fleets.MarkOnMap.init();return false;');
-    w.createNaviBarButton('Гарнизон', 1,
+    Addons.HTMLElement.createNaviBarButton('Гарнизон', 1,
         'showFleets({owner:\'own\',fleet_type:\'garrison\'});Addons.Fleets.MarkOnMap.init();return false;');
-    w.createNaviBarButton('Союзные', 3,
+    Addons.HTMLElement.createNaviBarButton('Союзные', 3,
         'showFleets({owner:\'peace\'});Addons.Fleets.MarkOnMap.init();return false;');
-    w.createNaviBarButton('Пираты', 5,
+    Addons.HTMLElement.createNaviBarButton('Пираты', 5,
         'showFleets({owner:\'pirate\'});Addons.Fleets.MarkOnMap.init();return false;');
 
     w.showFleets = function(opt) {
@@ -98,7 +98,7 @@ const ERR_MSG = {
         }
 
         // применить фильтры повторно
-        if (w.isObjNotEmpry(filters_stack)) {
+        if (Addons.isObjNotEmpry(filters_stack)) {
             for (const i in filters_stack) {
                 if (filters_stack.hasOwnProperty(i)) {
                     const filter = Object.keys(filters_stack[i]);
@@ -110,12 +110,12 @@ const ERR_MSG = {
         }
 
         // filtering selected
-        if (w.isVariableDefined(filterby) && (sortby === 'no' || sortby === null)) {
+        if (Addons.isVariableDefined(filterby) && (sortby === 'no' || sortby === null)) {
             sorted_fleets = filterFleetsBy(
                 sorted_fleets, owner, fleet_type,
                 sortby, filterby, filter_key, exclude_f_flag
             );
-            if (w.isVariableDefined(filter_key)) {
+            if (Addons.isVariableDefined(filter_key)) {
                 const filter = {};
                 filter[filterby] = [];
                 filter[filterby].push(filter_key, exclude_f_flag);
@@ -133,7 +133,7 @@ const ERR_MSG = {
 
         const timerID = setInterval(() => {
             const divs = getNaviDivs();
-            if (w.isObjNotEmpry(divs)) {
+            if (Addons.isObjNotEmpry(divs)) {
                 clearInterval(timerID);
                 makeClickableSortingIcons(divs, owner, fleet_type, filterby);
                 makeClickableFilteringIcons(divs, owner, fleet_type, sortby);
@@ -179,7 +179,7 @@ const ERR_MSG = {
                     filter_keys[sorted_fleets[i][filterby]] = filterby;
                 }
             }
-            if (w.isObjNotEmpry(filter_keys)) {
+            if (Addons.isObjNotEmpry(filter_keys)) {
                 showModalFilterList(filter_keys, owner, fleet_type, sortby, filterby);
             }
             else {
@@ -203,7 +203,7 @@ const ERR_MSG = {
     }
 
     function showModalFilterList(arr, owner, fleet_type, sortby, filterby) {
-        const sorted_list = Object.keys(arr).sort(w.sortAlphabetically);
+        const sorted_list = Object.keys(arr).sort(Addons.Sort.sortAlphabetically);
         const id = 'fl_filter';
         let message = `Отфильтровать по:</br><select id="${id}">`;
 
@@ -240,7 +240,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
     function getFleets(owner, fleet_type) {
         let fleets = w.map.fleets.slice();
 
-        if (w.isObjNotEmpry(fleets)) {
+        if (Addons.isObjNotEmpry(fleets)) {
             fleets = returnFleetsByOwner(owner, fleet_type, fleets);
             return fleets;
         }
@@ -249,10 +249,10 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
     }
 
     function drawFleetsTab(sorted_fleets) {
-        if (sorted_fleets && w.isObjNotEmpry(sorted_fleets)) {
+        if (sorted_fleets && Addons.isObjNotEmpry(sorted_fleets)) {
             $('#items_list').append(w.tmpl('fleets_title', sorted_fleets));
             for (const i in sorted_fleets) {
-                if (w.isVariableDefined(i)) {
+                if (Addons.isVariableDefined(i)) {
                     const fleet = sorted_fleets[i];
                     w.map.showBlockFleet(fleet, fleet.owner);
                 }
@@ -333,7 +333,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
             sorted_fleets.reverse();
             flags.sortby_flag = null;
         }
-        else if (w.isVariableDefined(sortby)) {
+        else if (Addons.isVariableDefined(sortby)) {
             flags.sortby_flag = sortby;
         }
         else {
@@ -347,14 +347,14 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
 
     function makeClickableFilteringIcons(divs, owner, fleet_type) {
         for (let i in divs) { // i = filterby
-            if (w.isVariableDefined(i)) {
+            if (Addons.isVariableDefined(i)) {
                 const div = divs[i];
                 if (i === 'fleet_speed' || i === 'stat' || (fleet_type === 'garrison' && i === 'turn')) {
                     continue;
                 }
                 if (i === 'player_name') {
                     if (owner === 'other' || owner === 'peace') {
-                        Addons.appendElemClickableIcon({
+                        Addons.HTMLElement.appendClickableIcon({
                             elem: div,
                             icon: 'fa-id-badge',
                             css_name: `filter-by-${i}`,
@@ -364,7 +364,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                     }
 
                     i = 'fleet_name';
-                    Addons.appendElemClickableIcon({
+                    Addons.HTMLElement.appendClickableIcon({
                         elem: div,
                         icon: 'fa-filter',
                         css_name: `filter-by-${i}`,
@@ -375,16 +375,20 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
                     continue;
                 }
 
-                w.appendElemClickableIcon(div, 'fa-filter', `filter-by-${i}`, 'Отфильтровать',
-                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
-redraw:'1', sortby:'no', filterby:'${i}'})`);
+                Addons.HTMLElement.appendClickableIcon({
+                    elem: div,
+                    icon: 'fa-filter',
+                    css_name: `filter-by-${i}`,
+                    title: 'Отфильтровать',
+                    callback: `showFleets({owner:'${owner}',fleet_type:'${fleet_type}',redraw:'1', sortby:'no',filterby:'${i}'})`,
+                });
             }
         }
     }
 
     function makeClickableSortingIcons(divs, owner, fleet_type) {
         for (const i in divs) { // i = sortby
-            if (w.isVariableDefined(i)) {
+            if (Addons.isVariableDefined(i)) {
                 const div = divs[i];
 
                 if (fleet_type === 'garrison') {
@@ -393,9 +397,13 @@ redraw:'1', sortby:'no', filterby:'${i}'})`);
                     }
                 }
 
-                w.makeElementClickable(div, 'fa-sort', `sort-by-${i}`, 'Отсортировать',
-                    `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
-redraw:'1', sortby:'${i}'})`);
+                Addons.HTMLElement.makeClickable({
+                    elem: div,
+                    icon: 'fa-sort',
+                    css_name: `sort-by-${i}`,
+                    title: 'Отсортировать',
+                    callback: `showFleets({owner:'${owner}',fleet_type:'${fleet_type}',redraw:'1', sortby:'${i}'})`,
+                });
             }
         }
     }
@@ -420,7 +428,7 @@ redraw:'1', sortby:'${i}'})`);
 
     function sortFleetsByStat(a, b) {
         // добавить сорт. по военным параметрам (поврежденные флоты - наверх)
-        return w.sortNumerically(a.health, b.health);
+        return Addons.Sort.sortNumerically(a.health, b.health);
     }
 
     function sortOwnFleetsByState(a, b) {
@@ -470,29 +478,29 @@ redraw:'1', sortby:'${i}'})`);
     }
 
     function sortFleetsByFleetName(a, b) {
-        return w.sortAlphabetically(a.fleet_name, b.fleet_name);
+        return Addons.Sort.sortAlphabetically(a.fleet_name, b.fleet_name);
     }
 
     function sortFleetsByPlayerName(a, b) {
-        return w.sortAlphabetically(a.player_name, b.player_name);
+        return Addons.Sort.sortAlphabetically(a.player_name, b.player_name);
     }
 
     function sortFleetsByType(a, b) {
-        return w.sortAlphabetically(a.ico, b.ico);
+        return Addons.Sort.sortAlphabetically(a.ico, b.ico);
     }
 
     function sortOtherFleetsByState(a, b) {
-        return w.sortNumerically(a.turn, b.turn);
+        return Addons.Sort.sortNumerically(a.turn, b.turn);
     }
 
     function sortFleetsByPlayerId(a, b) {
         // по возрастанию
-        return w.sortNumerically(a.player_id, b.player_id);
+        return Addons.Sort.sortNumerically(a.player_id, b.player_id);
     }
 
     function sortFleetsBySpeed(a, b) {
         // по убыванию
-        return -w.sortNumerically(a.fleet_speed, b.fleet_speed);
+        return -Addons.Sort.sortNumerically(a.fleet_speed, b.fleet_speed);
     }
 
 })(window);

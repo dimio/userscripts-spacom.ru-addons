@@ -41,16 +41,14 @@ const ERR_MSG = {
         w.showSmallMessage(ERR_MSG.NO_LIB);
         return;
     }
-    if (!w.Addons.Fleets) {
-        return;
-    }
+    const Addons = w.Addons;
 
-    if (!w.Addons.Fleets.mark_circles) {
-        w.Addons.Fleets.mark_circles = {};
+    if (!Addons.Fleets.mark_circles) {
+        Addons.Fleets.mark_circles = {};
     }
-    const circles = w.Addons.Fleets.mark_circles;
+    const circles = Addons.Fleets.mark_circles;
 
-    w.Addons.Fleets.MarkOnMap = {
+    Addons.Fleets.MarkOnMap = {
         buttonOn: null,
         buttonOff: null,
         enabled: false,
@@ -64,12 +62,12 @@ const ERR_MSG = {
                         continue;
                     }
 
-                    const center = w.Addons.getFleetCenter({
+                    const center = Addons.getFleetCenter({
                         fleet,
                         mode: 'mark',
                     });
 
-                    circles[i] = w.Addons.createCircle({
+                    circles[i] = Addons.createCircle({
                         x: center.x,
                         y: center.y,
                         radius: MARK_SETTINGS.RADIUS,
@@ -78,11 +76,11 @@ const ERR_MSG = {
                     });
                 }
 
-                w.Addons.drawCircles(circles);
+                Addons.drawCircles(circles);
             }
         },
         unmarkFleetsOnMap(circles) {
-            circles = w.Addons.Fleets.mark_circles;
+            circles = Addons.Fleets.mark_circles;
             for (const i in circles) {
                 scene.remove(circles[i]);
                 delete circles[i];
@@ -108,14 +106,14 @@ const ERR_MSG = {
             // Addons.waitMenu.bind(this);
             // разобр., почему не работает this.waitMenu, хотя waitMenu унаследована и вызывается так:
             // Addons.Fleets.waitMenu( $('#items_list > div.row.player_fleet_title'), function(menu) {
-            w.Addons.waitMenu($('#items_list > div.row.player_fleet_title'), (menu) => {
-                self.buttonOn = w.createActionButton('Пометить на карте', 'fa fa-eye', 'map-backlight');
+            Addons.waitMenu($('#items_list > div.row.player_fleet_title'), (menu) => {
+                self.buttonOn = Addons.HTMLElement.createActionButton('Пометить на карте', 'fa fa-eye', 'map-backlight');
                 self.buttonOn.on('click', self.turnOn.bind(self));
 
-                self.buttonOff = w.createActionButton('Убрать пометки', 'fa fa-eye-slash', 'map-backlight');
+                self.buttonOff = Addons.HTMLElement.createActionButton('Убрать пометки', 'fa fa-eye-slash', 'map-backlight');
                 self.buttonOff.on('click', self.turnOff.bind(self));
 
-                w.Addons.replaceElemContent($('div.col-xs-4.col-md-2.fleet_actions')[0], self.buttonOn, self.buttonOff);
+                Addons.HTMLElement.replaceContent($('div.col-xs-4.col-md-2.fleet_actions')[0], self.buttonOn, self.buttonOff);
             });
         },
         init() {
