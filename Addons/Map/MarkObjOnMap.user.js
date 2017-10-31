@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Spacom.ru::Addons::Fleets::MarkOnMap
+// @name         Spacom.ru::Addons::Fleets::MarkObjOnMap
 // @version      0.0.3
 // @namespace    http://dimio.org/
 // @description  Make fleets markable on map
@@ -13,7 +13,7 @@
 // @run-at       document-end
 /* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
-// console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
+// console.log('Spacom.ru::Addons::Fleets::MarkObjOnMap booted');
 const MARK_SETTINGS = {
     FILL_COLOR: {
         own: 'blue',

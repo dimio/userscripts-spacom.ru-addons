@@ -28,9 +28,8 @@
     if (!w.Addons) {
         w.Addons = {};
     }
-    let Addons = w.Addons;
 
-    Addons = {
+    w.Addons = {
         waitFor(obj, prop, callback) {
             const token = setInterval(() => {
                 if (obj[prop] !== undefined) {
@@ -137,7 +136,7 @@
         */
     };
 
-    Addons.HTMLElement = {
+    w.Addons.HTMLElement = {
         appendClickableIcon(opt) {
             const elem = opt.elem;
             const icon = opt.icon;
@@ -229,7 +228,7 @@
         },
     };
 
-    Addons.Sort = {
+    w.Addons.Sort = {
         sortAlphabetically(a, b) {
             // const a_cmp = a.toUpperCase();
             // const b_cmp = b.toUpperCase();
