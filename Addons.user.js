@@ -10,6 +10,7 @@
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
 // @match        http*://spacom.ru/*
+// @include      http*://spacom.ru/*
 // @run-at       document-start
 // ==/UserScript==
 /**
@@ -18,7 +19,7 @@
 **/
 // console.log('Spacom.ru::Addons booted');
 
-(function(window) {
+(function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -74,36 +75,64 @@
 
             return circle;
         },
-        drawCircle(circle) {
-            circle.set({
+        createMapText(text, opt) {
+            const x = opt.x;
+            const y = opt.y;
+            const color = opt.color || '#ff4800';
+            const f_size = opt.fontSize || 14;
+
+            const text_obj = new w.fabric.IText(text, {
+                left: x,
+                top: y + 18,
+                fill: color,
+                fontSize: f_size,
+                selection: false,
+                hasRotatingPoint: false,
+                hasBorders: false,
+                hasControls: false,
+                fontFamily: "'FontAwesome'",
+                originX: 'center',
+                originY: 'center',
+                visible: false,
+            });
+
+            w.scene.add(text_obj);
+            w.scene.sendToBack(text_obj);
+
+            return text_obj;
+        },
+
+        drawObjectOnScene(object) {
+            object.set({
                 visible: true,
             });
         },
-        drawCircles(circles) {
-            for (const i in circles) {
-                if (circles.hasOwnProperty(i)) {
-                    this.drawCircle(circles[i]);
+        drawObjectsOnScene(objects) {
+            for (const i in objects) {
+                if (objects.hasOwnProperty(i)) {
+                    this.drawObjectOnScene(objects[i]);
                 }
             }
+            w.scene.renderAll();
         },
 
-        getFleetCenter(opt) {
-            const fleet = opt.fleet;
+        getObjCenter(opt) {
+            const obj = opt.obj;
             const mode = opt.mode;
 
             let center;
 
             switch (mode) {
                 case 'mark':
-                    center = w.getCenterXY(fleet.x, fleet.y);
+                    center = w.getCenterXY(obj.x, obj.y);
                     break;
 
                 case 'viewzone':
-                    if (+fleet.turn === 0) {
-                        center = w.getCenterXY(fleet.x, fleet.y);
+                    if (+obj.turn === 0) {
+                        center = w.getCenterXY(obj.x, obj.y);
                     }
                     else {
-                        center = { x: fleet.start_x, y: fleet.start_y };
+                        center = { x: obj.start_x, y: obj.start_y };
                     }
                     break;
             }

@@ -9,6 +9,7 @@
 // @supportURL   dimio.org, dimio@dimio.org
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=map
+// @include      http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
 // console.log( 'Spacom::Addons::ExploreAllGeo booted' );
@@ -123,7 +124,7 @@ const EXPLORE_MSG_OK = 'Будет разведано систем: X. Резу�
             this.button = Addons.HTMLElement.createMapButton(
                 'fa-wpexplorer',
                 'spacom-addons-exploreallgeo',
-                'Заказать массовую георазведку систем'
+                'Заказать массовую георазведку систем',
             );
             this.button.on('click', this.exploreAll.bind(this));
         },

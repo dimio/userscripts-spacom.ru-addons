@@ -10,6 +10,7 @@
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=map
+// @include      http*://spacom.ru/?act=map
 // @run-at       document-end
 /* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
@@ -41,6 +42,9 @@ const ERR_MSG = {
         w.showSmallMessage(ERR_MSG.NO_LIB);
         return;
     }
+    if (!w.Addons.Map) {
+        w.Addons.Map = {};
+    }
     const Addons = w.Addons;
 
     if (!Addons.Fleets.mark_circles) {
@@ -62,8 +66,8 @@ const ERR_MSG = {
                         continue;
                     }
 
-                    const center = Addons.getFleetCenter({
-                        fleet,
+                    const center = Addons.getObjCenter({
+                        obj: fleet,
                         mode: 'mark',
                     });
 
@@ -76,7 +80,7 @@ const ERR_MSG = {
                     });
                 }
 
-                Addons.drawCircles(circles);
+                Addons.drawObjectsOnScene(circles);
             }
         },
         unmarkFleetsOnMap(circles) {
