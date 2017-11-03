@@ -33,16 +33,16 @@
     w.Addons = {
         waitFor(obj, prop, callback) {
             const token = setInterval(() => {
-                if (obj[prop] !== undefined) {
+                if (typeof obj[prop] !== 'undefined') {
                     clearInterval(token);
                     callback(obj[prop]);
                 }
             }, 0);
         },
-        waitMenu(menu, callback) {
+        waitObj(menu, callback) {
             const token = setInterval(() => {
                 if (typeof menu !== 'undefined') {
-                    if (w.isVariableDefined(menu.length) && menu.length > 0) {
+                    if (this.isVariableDefined(menu.length) && menu.length > 0) {
                         clearInterval(token);
                         callback(menu);
                     }
@@ -70,9 +70,6 @@
                 visible: false,
             });
 
-            w.scene.add(circle);
-            w.scene.sendToBack(circle);
-
             return circle;
         },
         createMapText(text, opt) {
@@ -96,13 +93,12 @@
                 visible: false,
             });
 
-            w.scene.add(text_obj);
-            w.scene.sendToBack(text_obj);
-
             return text_obj;
         },
 
         drawObjectOnScene(object) {
+            w.scene.add(object);
+            w.scene.sendToBack(object);
             object.set({
                 visible: true,
             });
@@ -113,7 +109,14 @@
                     this.drawObjectOnScene(objects[i]);
                 }
             }
-            w.scene.renderAll();
+            // w.scene.renderAll();
+        },
+        delObjectsOnScene(objects) {
+            for (const i in objects) {
+                if (objects.hasOwnProperty(i)) {
+                    w.scene.remove(objects[i]);
+                }
+            }
         },
 
         getObjCenter(opt) {
@@ -149,8 +152,14 @@
             }
             return true;
         },
-        isObjNotEmpry(obj) {
+        isObjValuesNotUndefinedOnly(obj) {
             if (Object.values(obj).filter(this.isVariableDefined).length > 0) {
+                return true;
+            }
+            return false;
+        },
+        isObjNotEmpty(obj) {
+            if (Object.keys(obj).length !== 0) {
                 return true;
             }
             return false;
@@ -236,8 +245,8 @@
         },
         createActionButton(btn_text, css_class, css_id) {
             const button = $(`<button class="btn-action" id="${css_id}" onclick="return false;">
-            <i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
-            <br></button>`);
+<i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
+<br></button>`);
 
             return button;
         },

@@ -13,6 +13,7 @@
 // @include      http*://spacom.ru/?act=map
 // @run-at       document-end
 // ==/UserScript==
+// http://bit.ly/2xV40HV
 console.log('Spacom.ru::Addons::Map::MarkAnomaly dev booted');
 const ANOMALY_MARK = {
     LABEL: {
@@ -51,15 +52,17 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
     const baseName = `server_${w.server_id}`;
     const storeName = 'stars';
 
-    // let circles = {};
-    const anomalies = [];
-    anomalies.circles = {};
-    anomalies.texts = {};
-    // let JSONedDB = [];
+    //const anomalies = [];
+    //anomalies.circles = {};
+    //anomalies.texts = {};
 
     Addons.Map.MarkAnomaly = {
         button: null,
         enabled: false,
+        anomalies: {
+            circles: {},
+            texts: {},
+        },
 
         logger(err) {
             console.error(err);
@@ -82,10 +85,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
             };
         },
 
-        getStarData(
-            star_id,
-            // callback,
-        ) {
+        getStarData(star_id) {
             const d = $.Deferred();
             const self = this;
 
@@ -93,7 +93,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
                 const request = db.transaction([storeName], 'readonly').objectStore(storeName).get(star_id);
                 request.onerror = this.logger;
                 request.onsuccess = function () {
-                    if (request.result !== undefined) {
+                    if (typeof request.result !== 'undefined') {
                         d.resolve(request.result);
                     }
                     else {
@@ -105,8 +105,22 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
             return d.promise();
         },
 
-        findAnomalies() {
-            // if (!Addons.isObjNotEmpry(anomalies_circles)) {
+        markAnomalies() {
+            if (!Addons.isObjNotEmpty(this.anomalies.circles)) {
+                this.createAnomaliesMarks();
+            }
+
+            if (this.enabled) {
+                Addons.drawObjectsOnScene(this.anomalies.circles);
+                Addons.drawObjectsOnScene(this.anomalies.texts);
+            }
+            else {
+                Addons.delObjectsOnScene(this.anomalies.circles);
+                Addons.delObjectsOnScene(this.anomalies.texts);
+            }
+        },
+
+        createAnomaliesMarks(callback) {
             const explored_stars = w.map.stars.filter((star) => {
                 return +star.explored === 1;
             });
@@ -118,7 +132,6 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
                         star = star_data;
                         if (typeof star !== 'undefined') {
                             for (const type in star.anomaly) {
-                                // if (star.anomaly[type] === undefined) {
                                 if (typeof star.anomaly[type] === 'undefined') {
                                     delete (star.anomaly[type]);
                                 }
@@ -127,9 +140,9 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
                                         obj: star,
                                         mode: 'mark',
                                     });
-                                    const label = this.makeAnomalyLabel(type, star.anomaly[type]);
+                                    const label = this.createAnomalyLabel(type, star.anomaly[type]);
 
-                                    anomalies.circles[i] = Addons.createCircle({
+                                    this.anomalies.circles[i] = Addons.createCircle({
                                         x: center.x,
                                         y: center.y,
                                         radius: ANOMALY_MARK.RADIUS,
@@ -137,7 +150,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
                                         opacity: ANOMALY_MARK.OPACITY,
                                     });
 
-                                    anomalies.texts[i] = Addons.createMapText(label.text, {
+                                    this.anomalies.texts[i] = Addons.createMapText(label.text, {
                                         x: center.x,
                                         y: center.y,
                                         color: label.color,
@@ -148,32 +161,15 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
                     }
                 );
             }
-            //}
-
-            Addons.drawObjectsOnScene(anomalies.circles);
-            Addons.drawObjectsOnScene(anomalies.texts);
+            //callback(this.anomalies.circles, this.anomalies.texts);
         },
 
-        makeAnomalyLabel(type, cnt) {
-            /* let text;
-            let color;*/
-
-            /* for (const type in star.anomaly) {
-                text = `${this.makeAnomalyLabelIco(type)} ${star.anomaly[type]}`;
-                color = this.makeAnomalyLabelColor(type);
-            }*/
-            //const type = star.anomaly;
+        createAnomalyLabel(type, cnt) {
             const text = `${ANOMALY_MARK.LABEL[type].ico} ${cnt}`;
             const color = ANOMALY_MARK.LABEL[type].color;
 
             return { text, color };
         },
-        /* makeAnomalyLabelIco(type) {
-            return ANOMALY_MARK.LABEL[type].ico;
-        },
-        makeAnomalyLabelColor(type) {
-            return ANOMALY_MARK.LABEL[type].color;
-        },*/
 
         downloadStarData(obj_id) {
             const url = `${w.APIUrl()}&act=map&task=star_planets&star_id=${obj_id}&format=json`;
@@ -220,33 +216,23 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
 
         turnOn(flag) {
             this.enabled = flag;
-            this.findAnomalies();
-            //scene.renderAll();
+            this.markAnomalies();
+            w.scene.renderAll();
         },
         toggle() {
             this.turnOn(!this.enabled);
         },
         init() {
-            // let self = this;
             this.button = Addons.HTMLElement.createMapButton(
-                'fa-wpexplorer',
+                'fa-diamond',
                 'spacom-addons-exploreallgeo',
                 'Отметить аномалии на карте',
             );
             this.button.on('click', this.toggle.bind(this));
-
-            // переопределение ф-и map.renewMap
-            /* let renewMap = map.renewMap;
-            map.renewMap = function() {
-                renewMap();
-                // self.drawCircles();
-                // self.findAnomalies();
-            };*/
         },
     };
 
     if (w.map) {
-        // Addons.Testing.init();
         Addons.Map.MarkAnomaly.init();
     }
 })(window);
