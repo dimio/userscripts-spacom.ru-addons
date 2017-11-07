@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom::Addons::Design::Extensions
-// @version      0.0.6
+// @version      0.0.7
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
@@ -18,11 +18,11 @@
 // An "All levels" addon - maked by segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
 // console.log("Spacom::Addons::Design::Extensions booted");
 const ERR_MSG = {
-    NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.ru::Addons:<br>
+    NO_LIB: `Для работы дополнений необходимо установить Spacom.ru::Addons:<br>
     https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
 };
 
-(function(window) {
+(function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -49,6 +49,8 @@ const ERR_MSG = {
                 "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
             designInfoTemplate = designInfoTemplate.replace(/<br\/>\s*<button/,
                 "<%= ( params['ship_power'] > '0') ? '<i class=\"fa fa-percent\" title=\"Примерная боевая эффективность корабля\"></i>&nbsp;' + params['ship_power'] : '' %> <br><br><button");
+            designInfoTemplate = designInfoTemplate.replace("cannon_targets'] + '&nbsp;' : '' %>",
+                "cannon_targets'] + ' <span class=\"cannon_attack\">&sum;&nbsp;</span>' + params['cannon_power_summ'] + '&nbsp;' : '' %>");
 
             document.getElementById('design_info_template').innerHTML = designInfoTemplate;
         },
@@ -64,6 +66,9 @@ const ERR_MSG = {
         calcCannonHp(params) {
             return params.hp + params.cannon_defence;
         },
+        calcCannonPower(params) {
+            return Math.round(params.cannon_power_summ / params.cannon_targets);
+        },
         calcShipPower(params) {
             // Если считать приближенно (точность 95%), то мощь корабля -
             // это корень из произведения его живучести и суммарного урона.
@@ -78,20 +83,25 @@ const ERR_MSG = {
             const design = w.design;
 
             const _designCalc = design.calc;
-            design.calc = function() {
+            design.calc = function () {
                 _designCalc.apply(this);
+
                 design.params.laser_power_summ = self.calcLaserPowerSumm(design.params);
                 design.params.laser_eq_hp = self.calcLaserEqHp(design.params);
                 design.params.laser_defence_hp = self.calcLaserHp(
                     design.params.hp,
                     design.params.laser_eq_hp
                 );
+
+                design.params.cannon_power_summ = design.params.cannon_power;
+                design.params.cannon_power = self.calcCannonPower(design.params);
                 design.params.cannon_hp = self.calcCannonHp(design.params);
+
                 design.params.ship_power = self.calcShipPower(design.params);
             };
 
             const _designDraw = design.draw;
-            design.draw = function() {
+            design.draw = function () {
                 _designDraw.apply(this);
                 $('#design_info').html(w.tmpl(document.getElementById('design_info_template').innerHTML, this));
             };
@@ -119,7 +129,7 @@ const ERR_MSG = {
             }
 
             const _Component = w.Component;
-            w.Component = function() {
+            w.Component = function () {
                 // console.log(this);
                 _Component.apply(this, arguments);
                 const id = parseInt(this.component_id, 10);
@@ -153,7 +163,7 @@ const ERR_MSG = {
         init() {
             const self = this;
             $('#details_list').prepend('<span><input id="all_levels" type="checkbox"> все уровни</span>');
-            $('#all_levels').on('change', function() {
+            $('#all_levels').on('change', function () {
                 if ($(this).is(':checked')) {
                     self.enable();
                 }
