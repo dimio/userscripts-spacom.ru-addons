@@ -45,7 +45,7 @@ const EXPLORE_MSG_OK = 'Будет разведано систем: X. Резу�
             const money = +document.getElementsByClassName('turn money')[1].innerText.split('/')[0];
 
             const Explore = {
-                fleets: this.getExploreFleets(),
+                fleets: this.getAllowExploreFleets(),
                 status: 1,
             };
             Explore.available = Explore.fleets.length;
@@ -87,7 +87,7 @@ const EXPLORE_MSG_OK = 'Будет разведано систем: X. Резу�
             }
             return true;
         },
-        getExploreFleets() {
+        getAllowExploreFleets() {
             let fleets = w.map.fleets.filter((fleet) => {
                 return +fleet.allow_explore === 1;
             });
