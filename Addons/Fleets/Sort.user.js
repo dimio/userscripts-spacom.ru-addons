@@ -98,7 +98,7 @@ const ERR_MSG = {
         }
 
         // применить фильтры повторно
-        if (Addons.isObjNotEmpry(filters_stack)) {
+        if (Addons.isObjNotEmpty(filters_stack)) {
             for (const i in filters_stack) {
                 if (filters_stack.hasOwnProperty(i)) {
                     const filter = Object.keys(filters_stack[i]);
@@ -133,7 +133,7 @@ const ERR_MSG = {
 
         const timerID = setInterval(() => {
             const divs = getNaviDivs();
-            if (Addons.isObjNotEmpry(divs)) {
+            if (Addons.isObjNotEmpty(divs)) {
                 clearInterval(timerID);
                 makeClickableSortingIcons(divs, owner, fleet_type, filterby);
                 makeClickableFilteringIcons(divs, owner, fleet_type, sortby);
@@ -179,7 +179,7 @@ const ERR_MSG = {
                     filter_keys[sorted_fleets[i][filterby]] = filterby;
                 }
             }
-            if (Addons.isObjNotEmpry(filter_keys)) {
+            if (Addons.isObjNotEmpty(filter_keys)) {
                 showModalFilterList(filter_keys, owner, fleet_type, sortby, filterby);
             }
             else {
@@ -240,7 +240,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
     function getFleets(owner, fleet_type) {
         let fleets = w.map.fleets.slice();
 
-        if (Addons.isObjNotEmpry(fleets)) {
+        if (Addons.isObjNotEmpty(fleets)) {
             fleets = returnFleetsByOwner(owner, fleet_type, fleets);
             return fleets;
         }
@@ -249,7 +249,7 @@ filter_key:'${select}', exclude_f_flag:${exclude_f_flag}}); $.modal.close();`);
     }
 
     function drawFleetsTab(sorted_fleets) {
-        if (sorted_fleets && Addons.isObjNotEmpry(sorted_fleets)) {
+        if (sorted_fleets && Addons.isObjNotEmpty(sorted_fleets)) {
             $('#items_list').append(w.tmpl('fleets_title', sorted_fleets));
             for (const i in sorted_fleets) {
                 if (Addons.isVariableDefined(i)) {
