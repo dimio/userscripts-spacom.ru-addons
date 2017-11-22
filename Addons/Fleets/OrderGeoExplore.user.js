@@ -25,7 +25,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
 const EXPLORE_MSG_OK = 'Будет разведано систем: X. ' +
     'Результат разведки станет доступен через 1 ход. Это стоило вам N кредитов.';
 
-(function (window) {
+(function(window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -59,38 +59,32 @@ const EXPLORE_MSG_OK = 'Будет разведано систем: X. ' +
             else if (Explore.fleets.length > 0) {
                 Explore.YesNo = confirm(`Разведать ${Explore.available} систем за ${Explore.cost} кредитов?`);
                 if (Explore.YesNo) {
+                    const requests = [];
+
                     for (const i in Explore.fleets) {
                         if (Explore.fleets.hasOwnProperty(i)) {
-                            // Explore.json_answer = this.orderExplore(+Explore.fleets.shift().fleet_id);
-                            Explore.response = this.orderExplore(+Explore.fleets.shift().fleet_id).then((json) => {
-                                console.log('This: ', json);
-                                if (+json.explore.status !== 1) {
-                                    w.showSmallMessage(ERR_MSG.EXPLORE_BREAK);
-                                    return false;
-                                }
-                                return json;
-                            });
-                            console.log('And this...', Explore.response);
+                            requests.push(
+                                this.orderExplore(+Explore.fleets.shift().fleet_id)
+                            );
                         }
                     }
 
-                    /* const timeoutID = w.setInterval(() => {
-                         if (Explore.fleets.length === 0 && Explore.status === 1) {
-                             w.clearInterval(timeoutID);
-                             let message = EXPLORE_MSG_OK.replace('N', Explore.cost);
-                             message = message.replace('X', Explore.available);
-                             w.showSmallMessage(message);
-                         }
-                     }, 0);*/
-                    if (Explore.response) {
-                        let message = EXPLORE_MSG_OK.replace('N', Explore.cost);
-                        message = message.replace('X', Explore.available);
-                        w.showSmallMessage(message);
-                        /* w.map.removeAllFleets();
-                        w.map.jsonToFleets(Explore.json_answer);
-                        w.map.drawFleets();
-                        w.parseAnswer(Explore.json_answer, '');*/
-                    }
+                    // $.when.apply($, requests)
+                    $.when(...requests)
+                        .done((response) => {
+                            w.map.removeAllFleets();
+                            w.map.jsonToFleets(response[0]);
+                            w.map.drawFleets();
+                            w.parseAnswer(response[0], '');
+
+                            let message = EXPLORE_MSG_OK.replace('N', Explore.cost);
+                            message = message.replace('X', Explore.available);
+                            return w.showSmallMessage(message);
+                        })
+                        .fail(() => {
+                            return w.showSmallMessage(ERR_MSG.EXPLORE_BREAK);
+                        })
+                    ;
                 }
             }
             else {
@@ -101,7 +95,6 @@ const EXPLORE_MSG_OK = 'Будет разведано систем: X. ' +
         orderExplore(fleet_id) {
             return $.getJSON(`${w.APIUrl()}&act=map&task=fleets&order=explore&fleet_id=${fleet_id}&format=json`)
                 .then((json) => {
-                    // return +json.explore.status;
                     return json;
                 });
         },
