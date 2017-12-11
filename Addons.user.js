@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons
-// @version      0.0.13
+// @version      0.0.15
 // @namespace    http://dimio.org/
 // @description  Provide Spacom.ru::Addons library functions on spacom.ru
 // @author       dimio (dimio@dimio.org)
@@ -17,9 +17,9 @@
  * Based on "Spacom addons" by segrey (
  * https://greasyfork.org/en/scripts/27897-spacom-addons
 **/
-// console.log('Spacom.ru::Addons booted');
+//console.log('Spacom.ru::Addons booted');
 
-(function (window) {
+(function(window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -51,16 +51,17 @@
         },
 
         createCircle(opt) {
-            const x = opt.x;
-            const y = opt.y;
+            this.x = opt.x;
+            this.y = opt.y;
 
             const radius = opt.radius || 3;
-            const fill = opt.fill || 'rgb(40,100,40)'; // light-green
+            const fill = opt.fill || 'rgb(40,100,40)'; //light-green
             const opacity = opt.opacity || 0.2;
 
+            const self = this;
             const circle = new w.fabric.Circle({
-                left: x,
-                top: y,
+                left: self.x,
+                top: self.y,
                 radius: radius * w.box_size,
                 fill,
                 opacity,
@@ -96,28 +97,43 @@
             return text_obj;
         },
 
-        drawObjectOnScene(object) {
+        _drawObjectOnScene(object) {
             w.scene.add(object);
             w.scene.sendToBack(object);
-            object.set({
+            /*object.set({
                 visible: true,
-            });
+            });*/
         },
         drawObjectsOnScene(objects) {
             for (const i in objects) {
                 if (objects.hasOwnProperty(i)) {
-                    this.drawObjectOnScene(objects[i]);
+                    this._drawObjectOnScene(objects[i]);
                 }
             }
-            // w.scene.renderAll();
         },
-        delObjectsOnScene(objects) {
+        toggleObjectsVisiblityOnScene(objects, visiblity) {
+            for (const i in objects) {
+                if (objects.hasOwnProperty(i)) {
+                    objects[i].set({
+                        visible: visiblity,
+                    });
+                }
+            }
+        },
+        /*hideObjectsOnScene(objects) {
+            for (const object of objects) {
+                object.set({
+                    visible: false,
+                });
+            }
+        },*/
+        /*delObjectsOnScene(objects) {
             for (const i in objects) {
                 if (objects.hasOwnProperty(i)) {
                     w.scene.remove(objects[i]);
                 }
             }
-        },
+        },*/
 
         getObjCenter(opt) {
             const obj = opt.obj;
@@ -145,7 +161,7 @@
 
         isVariableDefined(value) {
             if (typeof value === 'undefined') {
-                return false; // retrun value >>> 0
+                return false; //retrun value >>> 0
             }
             if (value === null) {
                 return false;
@@ -228,13 +244,13 @@
             const last = $(`#navi > div:nth-child(${last_el_num})`);
 
             $(last).parent().css({
-                // width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
+                //width: `${parseInt($(last).parent().css('width'), 10) + 15}px`,
                 width: 'fit-content',
                 'padding-left': '5px',
                 'padding-right': '5px',
             });
             $(last).parent().children('*').css({
-                // 'margin-left': '10px',
+                //'margin-left': '10px',
                 'margin-right': '5px',
             });
 
@@ -268,11 +284,11 @@
 
     w.Addons.Sort = {
         sortAlphabetically(a, b) {
-            // const a_cmp = a.toUpperCase();
-            // const b_cmp = b.toUpperCase();
-            // return (a_cmp < b_cmp) ? -1 : (a_cmp > b_cmp) ? 1 : 0;
+            //const a_cmp = a.toUpperCase();
+            //const b_cmp = b.toUpperCase();
+            //return (a_cmp < b_cmp) ? -1 : (a_cmp > b_cmp) ? 1 : 0;
 
-            // in IE10 - use localeCompare from Intl.JS
+            //in IE10 - use localeCompare from Intl.JS
             return a.localeCompare(b);
         },
         sortNumerically(a, b) {

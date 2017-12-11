@@ -31,7 +31,7 @@ const ERR_MSG = {
 https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
 };
 
-(function (window) {
+(function(window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -71,11 +71,11 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
             const request = indexedDB.open(baseName, 1);
             const self = this;
             request.onerror = this.logger;
-            request.onsuccess = function () {
+            request.onsuccess = function() {
                 // При успешном открытии вызвали коллбэк передав ему объект БД
                 f(request.result);
             };
-            request.onupgradeneeded = function (e) {
+            request.onupgradeneeded = function(e) {
                 // Если БД еще не существует, то создаем хранилище объектов.
                 e.currentTarget.result.createObjectStore(storeName, {
                     keyPath: 'id',
@@ -89,10 +89,10 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
             const d = $.Deferred();
             const self = this;
 
-            this.connectDB(function (db) {
+            this.connectDB(function(db) {
                 const request = db.transaction([storeName], 'readonly').objectStore(storeName).get(star_id);
                 request.onerror = this.logger;
-                request.onsuccess = function () {
+                request.onsuccess = function() {
                     if (typeof request.result !== 'undefined') {
                         d.resolve(request.result);
                     }
@@ -204,11 +204,23 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`
             });
         },
 
+        /*
+        function saveToTheDb(value) {
+            return new Promise(function(resolve, reject) {
+                db.values.insert(value, function(err, user) { // ошибка идет первой
+                    if (err) {
+                        return reject(err); // не забудьте вернуть здесь
+                    }
+                    resolve(user);
+                })
+            }
+        }
+        */
         setStarData(data) {
-            this.connectDB(function (db) {
+            this.connectDB(function(db) {
                 const request = db.transaction([storeName], 'readwrite').objectStore(storeName).put(data);
                 request.onerror = this.logerr;
-                request.onsuccess = function () {
+                request.onsuccess = function() {
                     return request.result;
                 };
             });
