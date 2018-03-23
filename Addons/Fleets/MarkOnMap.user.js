@@ -9,7 +9,8 @@
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
-// @match        http*://spacom.ru/?act=map
+// @match        http*://spacom.ru/?act=game/map
+// @include      http*://spacom.ru/?act=game/map
 // @run-at       document-end
 /* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
@@ -30,7 +31,7 @@ const ERR_MSG = {
     https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
 };
 
-(function(window) {
+(function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 

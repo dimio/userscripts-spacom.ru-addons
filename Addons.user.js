@@ -10,6 +10,7 @@
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
 // @match        http*://spacom.ru/*
+// @include      http*://spacom.ru/*
 // @run-at       document-start
 // ==/UserScript==
 /*
@@ -18,7 +19,7 @@
  */
 // console.log('Spacom.ru::Addons booted');
 
-(function(window) {
+(function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -116,7 +117,7 @@
 
     };
 
-    w.appendOnclickEvent = function(i, elem, callback) {
+    w.appendOnclickEvent = function (i, elem, callback) {
         const last_onclick = $(elem).attr('onclick');
         const new_onclick = `${callback}; ${last_onclick}`;
         $(elem).attr('onclick', new_onclick);
@@ -124,7 +125,7 @@
         return elem;
     };
 
-    w.appendElemClickableIcon = function(elem, icon, css_name, title, callback) {
+    w.appendElemClickableIcon = function (elem, icon, css_name, title, callback) {
         elem = $(elem);
 
         const clickable_icon = document.createElement('a');
@@ -139,7 +140,7 @@
         return elem;
     };
 
-    w.makeElementClickable = function(elem, icon, css_name, title, callback) {
+    w.makeElementClickable = function (elem, icon, css_name, title, callback) {
         let text = elem.innerText;
         if (icon) { text = `<i id="${css_name}" class="fa ${icon}"></i> ${text}`; }
         elem.innerHTML = `<a href="#" title="${title}" onclick="${callback}; return false;">${text}</a>`;
@@ -147,7 +148,7 @@
         return elem;
     };
 
-    w.createNaviBarButton = function(name, last_el_num, callback) {
+    w.createNaviBarButton = function (name, last_el_num, callback) {
         const last = $(`#navi > div:nth-child(${last_el_num})`);
 
         $(last).parent().css({
@@ -168,7 +169,7 @@ return false;"><a href="#">${name}</a></div>`);
         return next;
     };
 
-    w.createActionButton = function(btn_text, css_class, css_id) {
+    w.createActionButton = function (btn_text, css_class, css_id) {
         const button = $(`<button class="btn-action" id="${css_id}" onclick="return false;">
 <i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
 <br></button>`);
@@ -176,13 +177,13 @@ return false;"><a href="#">${name}</a></div>`);
         return button;
     };
 
-    w.appendElemActionButton = function(button, parent_el) {
+    w.appendElemActionButton = function (button, parent_el) {
         parent_el.append(button);
 
         return parent_el;
     };
 
-    w.createMapButton = function(css, id, title) {
+    w.createMapButton = function (css, id, title) {
         const last = $('#radar + div');
         const next = $(`<div id="${id}" title="${title}"><i class="fa ${css} fa-2x"></i></div>`).css({
             'z-index': last.css('z-index'),
@@ -197,7 +198,7 @@ return false;"><a href="#">${name}</a></div>`);
         return next;
     };
 
-    w.sortAlphabetically = function(a, b) {
+    w.sortAlphabetically = function (a, b) {
         // const a_cmp = a.toUpperCase();
         // const b_cmp = b.toUpperCase();
 
@@ -207,21 +208,21 @@ return false;"><a href="#">${name}</a></div>`);
         return a.localeCompare(b);
     };
 
-    w.sortNumerically = function(a, b) {
+    w.sortNumerically = function (a, b) {
         const a_cmp = parseFloat(a, 10);
         const b_cmp = parseFloat(b, 10);
 
         return a_cmp - b_cmp;
     };
 
-    w.isObjNotEmpry = function(obj) {
+    w.isObjNotEmpry = function (obj) {
         if (Object.values(obj).filter(this.isVariableDefined).length > 0) {
             return true;
         }
         return false;
     };
 
-    w.isVariableDefined = function(value) {
+    w.isVariableDefined = function (value) {
         if (typeof value === 'undefined') {
             return false; // retrun value >>> 0
         }
@@ -231,7 +232,7 @@ return false;"><a href="#">${name}</a></div>`);
         return true;
     };
 
-    w.toggleFlag = function(flag) {
+    w.toggleFlag = function (flag) {
         if (this.isVariableDefined(flag)) {
             flag = null;
             return flag;

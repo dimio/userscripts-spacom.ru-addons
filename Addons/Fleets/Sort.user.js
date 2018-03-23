@@ -9,8 +9,8 @@
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
-// @match        http*://spacom.ru/?act=map
-// @include      http*://spacom.ru/?act=map
+// @match        http*://spacom.ru/?act=game/map
+// @include      http*://spacom.ru/?act=game/map
 // @run-at       document-end
 // ==/UserScript==
 // console.log('Spacom.ru::Addons::Fleets::Sort booted');
@@ -21,7 +21,7 @@ const ERR_MSG = {
     Для сброса фильтров закройте и откройте заново текущую вкладку флотов.`,
 };
 
-(function(window) {
+(function (window) {
     window.unsafeWindow = window.unsafeWindow || window;
     const w = unsafeWindow;
 
@@ -44,7 +44,7 @@ const ERR_MSG = {
     const filters_stack = [];
 
     $('#navi > div:nth-child(2)').attr('onclick',
-        'showFleets({owner:\'own\'});w.Addons.Fleets.MarkOnMap.init()};return false;');
+        'showFleets({owner:\'own\'});Addons.Fleets.MarkOnMap.init();return false;');
     $('#navi > div:nth-child(3)').attr('onclick',
         'showFleets({owner:\'other\'});Addons.Fleets.MarkOnMap.init();return false;');
     w.createNaviBarButton('Гарнизон', 1,
@@ -54,7 +54,7 @@ const ERR_MSG = {
     w.createNaviBarButton('Пираты', 5,
         'showFleets({owner:\'pirate\'});Addons.Fleets.MarkOnMap.init();return false;');
 
-    w.showFleets = function(opt) {
+    w.showFleets = function (opt) {
         const owner = opt.owner || 'own';
         const fleet_type = opt.fleet_type || 'fleet';
         const redraw = opt.redraw || null;
@@ -217,7 +217,7 @@ const ERR_MSG = {
 
         w.showSmallMessage(message);
 
-        $('#filtering-list-checkbox').change(function(exclude_f_flag) {
+        $('#filtering-list-checkbox').change(function (exclude_f_flag) {
             if ($(this).is(':checked')) {
                 exclude_f_flag = true;
             }
@@ -225,7 +225,7 @@ const ERR_MSG = {
                 exclude_f_flag = false;
             }
 
-            $('#data_modal > select').change(function() {
+            $('#data_modal > select').change(function () {
                 const select = $(this).val();
                 $('#data_modal > button').attr('onclick',
                     `showFleets({owner:'${owner}', fleet_type:'${fleet_type}',
