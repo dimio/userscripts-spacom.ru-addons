@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::Sort
-// @version      0.0.13
+// @version      0.0.14
 // @namespace    http://dimio.org/
 // @description  Add a sorting filtres for fleets tabs
 // @author       dimio (dimio@dimio.org)

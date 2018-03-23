@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.ru::Addons::Fleets::MarkOnMap
-// @version      0.0.3
+// @version      0.0.4
 // @namespace    http://dimio.org/
 // @description  Make fleets markable on map
 // @author       dimio (dimio@dimio.org)

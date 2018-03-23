@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom::Addons::Design::Extensions
-// @version      0.0.6
+// @version      0.0.7
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
