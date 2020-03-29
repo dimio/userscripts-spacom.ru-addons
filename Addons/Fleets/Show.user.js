@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Show
-// @version      0.0.1
+// @version      0.1.0
 // @namespace    http://dimio.org/
 // @description  Some improvements on fleet show window
 // @author       dimio (dimio@dimio.org)
@@ -36,21 +36,18 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
   }
 
   w.Addons.Fleets.Show = {
-    showShipsCount() {
-      const shipTypes = [];
-
-      w.Addons.waitFor(w.$('#ships_info'), 'length', () => {
-        w.$('.ships_info > div').each(
-            function () {
-              shipTypes.push(w.$(this).attr('data-ship'));
-            }
-        )
-
-        let shipCount = shipTypes.reduce(function (acc, el) {
-          acc[el] = (acc[el] || 0) + 1;
-          return acc;
-        }, {});
-
+    shipsCount: {
+      calc(ships) {
+        const shipCount = {};
+        //garrison ships not defined
+        if (typeof ships !== 'undefined') {
+          ships.forEach((ship) => {
+            shipCount[ship.image] = (shipCount[ship.image] || 0) + 1;
+          });
+        }
+        return shipCount;
+      },
+      show(shipCount) {
         w.$('.fleet_ico_container').each(
             function () {
               w.$(this).append(
@@ -58,17 +55,21 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
                       '/')[3]]);
             }
         )
-      })
+      },
     },
 
     init() {
-      const _showBlockFleet = w.map.showBlockFleet;
-      w.map.showBlockFleet = function () {
-        _showBlockFleet.apply(this, arguments);
-        w.Addons.Fleets.showFleet.showShipsCount();
-      };
+      const self = this;
+      const _showFleetShips = w.map.showFleetShips;
+      w.map.showFleetShips = (function (json) {
+        _showFleetShips.call(this, json);
+        self.shipsCount.show(
+            self.shipsCount.calc(json.fleets.fleet.ships)
+        );
+      });
     }
-  }
+  };
 
-  w.Addons.Fleets.showFleet.init();
-})();
+  w.Addons.Fleets.Show.init();
+
+})(window);
