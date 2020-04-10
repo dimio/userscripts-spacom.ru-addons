@@ -34,7 +34,7 @@
     * [Spacom.Addons.Design.Extensions](./Addons/Design/Extensions.user.js): позволяет менять максимальный уровень исследованных деталей (задаётся в настройках скрипта), выводит расширенную информацию по характеристикам проекта.
 
 + ### Системы, планеты
-    * [Spacom.Addons.Stars.PlanetStats](./Addons/Stars/PlanetStats.js): выводит сумму базовых показателей всех планет в окне обзора системы, работает для систем с проведённой георазведкой
+    * [Spacom.Addons.Stars.PlanetStats](./Addons/Stars/PlanetStats.user.js): выводит сумму базовых показателей всех планет в окне обзора системы, работает для систем с проведённой георазведкой
 
 + ### Внешний вид
     * [Spacom.Addons.Decor](./Addons/Decor/Decor.user.js): косметические изменения интерфейса (удобочитаемый формат чисел)
@@ -45,7 +45,5 @@
 
 ## Поддержка
 
-* [GitHub issues](../issues)
+* [GitHub issues](../../issues)
 * [dimio.org](http://dimio.org), dimio+spacom@dimio.org
-
-
