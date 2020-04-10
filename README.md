@@ -45,7 +45,5 @@
 
 ## Поддержка
 
-* [GitHub issues](../issues)
+* [GitHub issues](../../issues)
 * [dimio.org](http://dimio.org), dimio+spacom@dimio.org
-
-
