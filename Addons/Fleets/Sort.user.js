@@ -114,8 +114,10 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       this.drawFleetsTab(this.fleets);
       // add sorting & filtering buttons to current fleets tab
       this.addButtons(owner, fleetType);
-
-      // this.fillMarkedFleets(sortedFleets);
+      // add mark/unmark buttons
+      if (Addons.Fleets.MarkOnMap){
+        Addons.Fleets.MarkOnMap.init();
+      }
 
       return true;
     },
