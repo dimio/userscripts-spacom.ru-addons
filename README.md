@@ -13,30 +13,31 @@
 ## Установка
 
 * Описана установка в Chrome + [Tampermonkey](http://tampermonkey.net/)
-* Установить [Spacom.Addons](/raw/master/Addons/Addons.user.js) (набор библиотечных функций для остальных дополнений)
+* Для установки дополнений - перейти к нужному по ссылке и нажать кнопку "Raw", Tampermonkey автоматически предложит установить дополнение
+* Установить [Spacom.Addons](./Addons/Addons.user.js) (набор библиотечных функций для остальных дополнений)
 * Установить нужные дополнения из [списка дополнений](#список-дополнений), как отдельные пользовательские скрипты
 
 ## Список дополнений
 
 + ### Флоты
-    * [Spacom.Addons.Fleets.Sort](/raw/master/Addons/Fleets/Sort.user.js) - сортировка флотов:
+    * [Spacom.Addons.Fleets.Sort](./Addons/Fleets/Sort.user.js) - сортировка флотов:
         - Разделение вкладки флотов на "Гарнизон", свои и чужие флоты, флоты пиратов
         - Фильтрация и сортировка флотов по различным параметрам (поддерживаются множественные фильтры, исключающие фильтры, сортировка внутри отфильтрованного)
         - Результат фильтрации и/или сортировки сохраняется при совершении действий с флотами и переключении вкладок флотов
-    * [Spacom.Addons.Fleets.MarkOnMap](/raw/master/Addons/Fleets/MarkOnMap.user.js): позволяет отмечать выбранные флоты на карте, может использоваться совместно с сортировкой и фильтрацией, для работы необходимо дополнительно установить [Spacom.Addons.Map.Scene](/raw/master/Addons/Map/Scene.user.js)
-    * [Spacom.Addons.Fleets.Show](/raw/master/Addons/Fleets/Show.user.js): показывает количество однотипных кораблей во флоте
+    * [Spacom.Addons.Fleets.MarkOnMap](./Addons/Fleets/MarkOnMap.user.js): позволяет отмечать выбранные флоты на карте, может использоваться совместно с сортировкой и фильтрацией, для работы необходимо дополнительно установить [Spacom.Addons.Map.Scene](./Addons/Map/Scene.user.js)
+    * [Spacom.Addons.Fleets.Show](./Addons/Fleets/Show.user.js): показывает количество однотипных кораблей во флоте
 
 + ### Карта
-    * [Spacom.Addons.Map.ShowViewZones](/raw/master/Addons/Map/ShowViewZones.user.js): показать/скрыть зоны обзора флотов на карте
+    * [Spacom.Addons.Map.ShowViewZones](./Addons/Map/ShowViewZones.user.js): показать/скрыть зоны обзора флотов на карте
 
 + ### Конструктор кораблей
-    * [Spacom.Addons.Design.Extensions](/raw/master/Addons/Design/Extensions.user.js): позволяет менять максимальный уровень исследованных деталей (задаётся в настройках скрипта), выводит расширенную информацию по характеристикам проекта.
+    * [Spacom.Addons.Design.Extensions](./Addons/Design/Extensions.user.js): позволяет менять максимальный уровень исследованных деталей (задаётся в настройках скрипта), выводит расширенную информацию по характеристикам проекта.
 
 + ### Системы, планеты
-    * [Spacom.Addons.Stars.PlanetStats](/raw/master/Addons/Stars/PlanetStats.js): выводит сумму базовых показателей всех планет в окне обзора системы, работает для систем с проведённой георазведкой
+    * [Spacom.Addons.Stars.PlanetStats](./Addons/Stars/PlanetStats.js): выводит сумму базовых показателей всех планет в окне обзора системы, работает для систем с проведённой георазведкой
 
 + ### Внешний вид
-    * [Spacom.Addons.Decor](/raw/master/Addons/Decor/Decor.user.js): косметические изменения интерфейса (удобочитаемый формат чисел)
+    * [Spacom.Addons.Decor](./Addons/Decor/Decor.user.js): косметические изменения интерфейса (удобочитаемый формат чисел)
 
 ## Требования
 
@@ -44,7 +45,7 @@
 
 ## Поддержка
 
-* [GitHub issues](/issues)
+* [GitHub issues](../issues)
 * [dimio.org](http://dimio.org), dimio+spacom@dimio.org
 
 
