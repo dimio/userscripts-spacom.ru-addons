@@ -1,127 +1,134 @@
 // ==UserScript==
-// @name         Spacom.ru::Addons::Fleets::MarkOnMap
-// @version      0.0.4
+// @name         Spacom.Addons.Fleets.MarkOnMap
+// @version      0.1.0
 // @namespace    http://dimio.org/
-// @description  Make fleets markable on map
+// @description  Mark/unmark fleets on map
 // @author       dimio (dimio@dimio.org)
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
-// @match        http*://spacom.ru/?act=game/map
-// @include      http*://spacom.ru/?act=game/map
+// @match        http*://spacom.ru/?act=game/map*
+// @include      http*://spacom.ru/?act=game/map*
 // @run-at       document-end
-/* eslint linebreak-style: ["error", "unix"]*/
 // ==/UserScript==
-//console.log('Spacom.ru::Addons::Fleets::MarkOnMap booted');
+// console.log('Spacom.Addons.Fleets.MarkOnMap booted');
+
 const MARK_SETTINGS = {
-    FILL_COLOR: {
-        own: 'blue',
-        other: 'red',
-        pirate: 'yellow',
-        peace: '#94ff00', //light-green
-    },
-    RADIUS: 0.8,
-    OPACITY: 0.5,
+  FILL_COLOR: {
+    own: 'blue',
+    other: 'red',
+    pirate: 'yellow',
+    peace: '#94ff00', //light-green
+  },
+  RADIUS: 0.8,
+  OPACITY: 0.5,
 };
 
 const ERR_MSG = {
-    NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.ru::Addons:<br>
-    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons.user.js`,
+  NO_LIB: `Для работы дополнения необходимо установить и включить
+<ul>
+<li>Spacom.Addons: https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js</li>
+<li>Spacom.Addons.Map.Scene: https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Map/Scene.user.js</li>
+</ul>`,
 };
 
 (function (window) {
-    window.unsafeWindow = window.unsafeWindow || window;
-    const w = unsafeWindow;
+  window.unsafeWindow = window.unsafeWindow || window;
+  const w = unsafeWindow;
 
-    if (w.self !== w.top) {
-        return;
-    }
-    if (!w.Addons) {
-        w.showSmallMessage(ERR_MSG.NO_LIB);
-        return;
-    }
-    if (!w.Addons.Fleets) {
-        return;
-    }
+  if (w.self !== w.top) {
+    return;
+  }
+  if (!w.Addons) {
+    w.showSmallMessage(ERR_MSG.NO_LIB);
+    return;
+  }
+  if (!w.Addons.Fleets) {
+    return;
+  }
 
-    if (!w.Addons.Fleets.mark_circles) {
-        w.Addons.Fleets.mark_circles = {};
-    }
-    const circles = w.Addons.Fleets.mark_circles;
+  w.Addons.Fleets.MarkOnMap = {
+    buttonOn: null,
+    buttonOff: null,
+    enabled: false,
+    marks: {},
 
-    w.Addons.Fleets.MarkOnMap = {
-        buttonOn: null,
-        buttonOff: null,
-        enabled: false,
+    createMarks(fleets) {
+      for (const fleet of fleets) {
+        const center = w.Addons.getObjCenter({
+          obj: fleet,
+          mode: 'mark',
+        });
 
-        markFleetsOnMap(fleets) {
-            if (w.backlighted_fleets) {
-                for (const i in w.backlighted_fleets) {
-                    const fleet = w.backlighted_fleets[i];
+        if (fleet.fleet_id in this.marks[w.sub_menu]) {
+          if (w.sub_menu.includes('own')) {
+            w.Addons.Map.Scene.setObjectCenter(
+              w.Addons.Map.Scene.getObjectById(fleet.fleet_id),
+              center
+            );
+          }
+          continue;
+        }
 
-                    if (fleet.fleet_id in circles) {
-                        continue;
-                    }
+        this.marks[w.sub_menu][fleet.fleet_id] = w.Addons.Map.Scene.createCircle({
+          id: fleet.fleet_id,
+          x: center.x,
+          y: center.y,
+          radius: MARK_SETTINGS.RADIUS,
+          fill: this.getMarkFillColor(fleet.owner),
+          opacity: MARK_SETTINGS.OPACITY,
+        });
+      }
+    },
+    mark() {
+      this.createMarks(w.Addons.Fleets.Sort.fleets);
+      if (w.Addons.isObjNotEmpty(this.marks[w.sub_menu])) {
+        w.Addons.Map.Scene.show(this.marks[w.sub_menu])
+      }
+    },
+    unmark() {
+      w.Addons.Map.Scene.hide(this.marks[w.sub_menu]);
+      // it's needed so that do not highlight again
+      // deleted, splitted or moved to garrison fleets
+      if (w.sub_menu.includes('own')) {
+        delete this.marks[w.sub_menu];
+      }
+    },
+    getMarkFillColor(fleetOwner) {
+      return MARK_SETTINGS.FILL_COLOR[fleetOwner] || 'white';
+    },
+    turnOn() {
+      this.enabled = true;
+      if (!w.Addons.isVariableDefined(this.marks[w.sub_menu])) {
+        this.marks[w.sub_menu] = [];
+      }
+      this.mark();
+    },
+    turnOff() {
+      if (this.enabled) {
+        this.unmark();
+      }
+    },
+    addMarkButtons() {
+      const self = this;
+      w.Addons.waitObj($('#items_list > div.row.player_fleet_title'), () => {
+        self.buttonOn = w.Addons.DOM.createActionButton('Пометить', 'fa fa-eye',
+          'map-mark');
+        self.buttonOn.on('click', self.turnOn.bind(self));
 
-                    const center = w.Addons.getFleetCenter({
-                        fleet,
-                        mode: 'mark',
-                    });
+        self.buttonOff = w.Addons.DOM.createActionButton('Скрыть', 'fa fa-eye-slash',
+          'map-unmark');
+        self.buttonOff.on('click', self.turnOff.bind(self));
 
-                    circles[i] = w.Addons.createCircle({
-                        x: center.x,
-                        y: center.y,
-                        radius: MARK_SETTINGS.RADIUS,
-                        fill: this.getMarkFillColor(fleet.owner),
-                        opacity: MARK_SETTINGS.OPACITY,
-                    });
-                }
-
-                w.Addons.drawCircles(circles);
-            }
-        },
-        unmarkFleetsOnMap(circles) {
-            circles = w.Addons.Fleets.mark_circles;
-            for (const i in circles) {
-                scene.remove(circles[i]);
-                delete circles[i];
-            }
-        },
-        getMarkFillColor(fleet_owner) {
-            return MARK_SETTINGS.FILL_COLOR[fleet_owner] || 'white';
-        },
-
-        turnOn() {
-            this.enabled = true;
-            this.markFleetsOnMap();
-            scene.renderAll();
-        },
-        turnOff() {
-            if (this.enabled) {
-                this.unmarkFleetsOnMap();
-                scene.renderAll();
-            }
-        },
-        makeMarkButtons() {
-            const self = this;
-            // Addons.waitMenu.bind(this);
-            // разобр., почему не работает this.waitMenu, хотя waitMenu унаследована и вызывается так:
-            // Addons.Fleets.waitMenu( $('#items_list > div.row.player_fleet_title'), function(menu) {
-            w.Addons.waitMenu($('#items_list > div.row.player_fleet_title'), (menu) => {
-                self.buttonOn = w.createActionButton('Пометить на карте', 'fa fa-eye', 'map-backlight');
-                self.buttonOn.on('click', self.turnOn.bind(self));
-
-                self.buttonOff = w.createActionButton('Убрать пометки', 'fa fa-eye-slash', 'map-backlight');
-                self.buttonOff.on('click', self.turnOff.bind(self));
-
-                w.Addons.replaceElemContent($('div.col-xs-4.col-md-2.fleet_actions')[0], self.buttonOn, self.buttonOff);
-            });
-        },
-        init() {
-            this.makeMarkButtons();
-        },
-    };
+        w.Addons.DOM.replaceContent($('div.col-xs-4.col-md-2.fleet_actions')[0],
+          self.buttonOn, self.buttonOff);
+      });
+    },
+    init() {
+      this.addMarkButtons();
+    },
+  };
 
 })(window);
