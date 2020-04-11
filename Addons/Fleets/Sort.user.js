@@ -371,20 +371,6 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
         }
       }
     },
-    fillMarkedFleets(fleets) {
-      // для корректной работы подсветки на карте - развернуть
-      // отфильтрованный массив в хэш (уникальность ключей)
-      for (const fleet of fleets) {
-        // const fleet = sortedFleets[i];
-        if (fleet.fleet_id in this.markedFleets) {
-          continue;
-        }
-        this.markedFleets[fleet.fleet_id] = fleet;
-      }
-      // fleets.forEach(fleet => {
-      //   this.markedFleets[fleet.fleet_id] = fleet;
-      // })
-    },
     init() {
       $('#navi > div:nth-child(2)').attr('onclick',
         'Addons.Fleets.Sort.showFleets({owner:\'own\'});return false;');
