@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Sort
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Add a sorting and filters for fleets tabs
 // @author       dimio (dimio@dimio.org)
@@ -115,7 +115,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       // add sorting & filtering buttons to current fleets tab
       this.addButtons(owner, fleetType);
       // add mark/unmark buttons
-      if (Addons.Fleets.MarkOnMap){
+      if (Addons.Fleets.MarkOnMap) {
         Addons.Fleets.MarkOnMap.init();
       }
 
@@ -150,7 +150,8 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       const isExcludeId = 'filtering-list-exclude';
       const filter = new Filter({[filterBy]: []});
 
-      let message = "Отфильтровать по:</br><select id='fl_filter' multiple='multiple'>";
+      let message = `Отфильтровать по:</br><select id='fl_filter' size='${params.length
+      < 8 ? params.length : 8}' multiple='multiple'>`;
       params.forEach(param => {
         message += `<option>${param}</option>`;
       });
