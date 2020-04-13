@@ -13,7 +13,7 @@
 ## Установка
 
 * Описана установка в Chrome + [Tampermonkey](http://tampermonkey.net/)
-* Для установки дополнений - перейти к нужному по ссылке и нажать кнопку "Raw", Tampermonkey автоматически предложит установить дополнение
+* Для установки дополнений - перейти к нужному по ссылке и нажать кнопку "Raw", Tampermonkey автоматически предложит установить дополнение ([пример - установка скрипта сортировки](./Addons/docs/img/script-install-example.png))
 * Установить [Spacom.Addons](./Addons/Addons.user.js) (набор библиотечных функций для остальных дополнений)
 * Установить нужные дополнения из [списка дополнений](#список-дополнений), как отдельные пользовательские скрипты
 * Свежие версии скриптов можно установить из [тестовой ветки](../../tree/feature)
@@ -29,7 +29,9 @@
     * [Spacom.Addons.Fleets.Show](./Addons/Fleets/Show.user.js): показывает количество однотипных кораблей во флоте
 
 + ### Карта
-    * [Spacom.Addons.Map.ShowViewZones](./Addons/Map/ShowViewZones.user.js): показать/скрыть зоны обзора флотов на карте
+    * [Spacom.Addons.Map.Scene](./Addons/Map/Scene.user.js): библиотека для работы с картой
+    * [Spacom.Addons.Map.ShowViewZones](./Addons/Map/ShowViewZones.user.js): показать/скрыть зоны обзора своих флотов и систем на карте
+    * [Spacom.Addons.Map.Ruler](./Addons/Map/Ruler.user.js): линейка для измерения расстояний между системами на карте, рисует линию с измеренным расстоянием и дополнительным текстом (дополнительная информация [здесь](./Addons/docs/ruler.md))
 
 + ### Конструктор кораблей
     * [Spacom.Addons.Design.Extensions](./Addons/Design/Extensions.user.js): позволяет менять максимальный уровень исследованных деталей (задаётся в настройках скрипта), выводит расширенную информацию по характеристикам проекта.
@@ -38,14 +40,16 @@
     * [Spacom.Addons.Stars.PlanetStats](./Addons/Stars/PlanetStats.user.js): выводит сумму базовых показателей всех планет в окне обзора системы, работает для систем с проведённой георазведкой
 
 + ### Внешний вид
-    * [Spacom.Addons.Decor](./Addons/Decor/Decor.user.js): косметические изменения интерфейса (удобочитаемый формат чисел)
+    * [Spacom.Addons.Decor](./Addons/Decor/Decor.user.js):
+        - косметические изменения интерфейса (удобочитаемый формат чисел)
+        - на "бесконечном" сервере ("Войны вечности") добавляет глобальный номер хода сервера после персонального номера хода игрока
 
 ## Требования
 
-* [Плагин Tampermonkey](http://tampermonkey.net/) или аналогичный (Greasemonkey, Ace Script, Violentmonkey и т.д.) для вашего браузера - по желанию
+* [Плагин Tampermonkey](http://tampermonkey.net/) или аналогичный (Greasemonkey, Ace Script, Violentmonkey и т.д.) для вашего браузера - по желанию. Работоспособность дополнений проверяется в Chrome с Tampermonkey.
 
 ## Поддержка
 
 * Работоспособность проверяется в Chrome с Tampermonkey, так что при ошибках не забывайте указать, в каком браузере и с каким плагином UserScripts (или без такового) проявляются ошибки.
 * [GitHub issues](../../issues) - лучше всего сообщать об ошибках здесь
-* [dimio.org](http://dimio.org), dimio+spacom@dimio.org
+* [dimio.org](http://dimio.org), dimio+spacom@dimio.org, dimioblog@gmail.com
