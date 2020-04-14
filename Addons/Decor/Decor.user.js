@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Decor
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Some game interface view improvements
 // @author       dimio (dimio@dimio.org)
@@ -13,6 +13,12 @@
 // @include      http*://spacom.ru/*
 // @run-at       document-end
 // ==/UserScript==
+// console.log('Spacom.Addons.Decor booted');
+
+const SETTINGS = {
+  formatNumbers: true,
+  addGlobalTurn: true,
+};
 
 (function (window) {
   window.unsafeWindow = window.unsafeWindow || window;
@@ -30,13 +36,28 @@
       const _short_number = w.short_number;
       w.short_number = function (number) {
         return (number < 10000) ?
-            parseInt(number, 10).toLocaleString() :
-            _short_number.call(this, number)
-            .replace(/^(\d+)(\w)$/, "$1&nbsp;$2");
+          parseInt(number, 10).toLocaleString() :
+          _short_number.call(this, number)
+          .replace(/^(\d+)(\w)$/, "$1&nbsp;$2");
       }
     },
+    addServerGlobalTurn() {
+      const _parseAnswer = w.parseAnswer;
+      w.parseAnswer = function (json, type) {
+        _parseAnswer.call(self, ...arguments);
+        const lengthCounter = json['info']['length_counter'];
+        if (w.Addons.isVariableDefined(lengthCounter) && lengthCounter > "0") {
+          $("#turn_num").append('&nbsp;[' + w.turn + ']')
+        }
+      };
+    },
     init() {
-      this.formatShortNumber();
+      if (SETTINGS.formatNumbers) {
+        this.formatShortNumber();
+      }
+      if (SETTINGS.addGlobalTurn) {
+        this.addServerGlobalTurn();
+      }
     },
   };
 
