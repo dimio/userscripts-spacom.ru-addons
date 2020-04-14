@@ -3,8 +3,8 @@
 // @version      0.1.0
 // @namespace    http://dimio.org/
 // @description  Show on a map view zones for fleets and colonized systems
-// @author       segrey
 // @author       dimio (dimio@dimio.org)
+// @author       segrey
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
@@ -21,8 +21,8 @@
 //console.log('Spacom.Addons.Map.ShowViwZones');
 
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.Addons:<br>
-https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js`,
+  NO_LIB: `Для работы Spacom.Addons.Map.ShowViewZones необходимо установить и включить Spacom.Addons
+<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
 };
 
 (function (window) {

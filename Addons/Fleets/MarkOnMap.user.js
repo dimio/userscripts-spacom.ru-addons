@@ -27,11 +27,12 @@ const MARK_SETTINGS = {
 };
 
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнения необходимо установить и включить
+  NO_LIB: `Для работы Spacom.Addons.Fleets.MarkOnMap необходимо установить и включить следующие дополнения:
 <ul>
-<li>Spacom.Addons: https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js</li>
-<li>Spacom.Addons.Map.Scene: https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Map/Scene.user.js</li>
-</ul>`,
+<li>Spacom.Addons</li>
+<li>Spacom.Addons.Map.Scene</li>
+</ul>
+<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
 };
 
 (function (window) {
@@ -41,7 +42,7 @@ const ERR_MSG = {
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!w.Addons || !w.Addons.Map.Scene) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
