@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Map.Scene
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Draw on map
 // @author       dimio (dimio@dimio.org)
@@ -16,11 +16,13 @@
 // console.log('Spacom.Addons.Map.Scene booted');
 
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.Addons:<br>
-    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js`,
+  NO_LIB: `Для работы Spacom.Addons.Map.Scene необходимо установить и включить Spacom.Addons
+<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
 };
 
 (function (window) {
+  'use strict';
+
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
 
@@ -37,6 +39,82 @@ const ERR_MSG = {
   const Addons = w.Addons;
 
   Addons.Map.Scene = {
+    addArrowhead(line, opt) {
+      this.id = opt.id;
+      this.width = opt.width || 10;
+      this.height = opt.height || 25;
+      this.fill = opt.fill || 'rgb(40,100,40)';
+
+      const offset = this._calcArrowheadOffset(line.x1, line.y1,
+        line.x2, line.y2, this.height);
+
+      const triangle = new w.fabric.Triangle({
+        // id: this.id,
+        width: this.width,
+        height: this.height,
+        fill: this.fill,
+        left: line.x2 - offset.dx,
+        top: line.y2 - offset.dy,
+        angle: this._calcArrowheadAngleDeg(line.x1, line.y1, line.x2, line.y2),
+        originX: 'center',
+        originY: 'center',
+      });
+
+      return new w.fabric.Group(
+        [line, triangle], {
+          id: this.id,
+          selectable: false,
+        });
+    },
+    _calcArrowheadOffset(x1, y1, x2, y2, triangleHeight) {
+      const deltaX = x2 - x1;
+      const deltaY = y2 - y1;
+      const lineLength = Math.sqrt(
+        Math.pow(deltaX, 2) + Math.pow(deltaY, 2)
+      );
+      const dx = (triangleHeight / 2 * deltaX) / lineLength;
+      const dy = (triangleHeight / 2 * deltaY) / lineLength;
+
+      return {dx, dy};
+    },
+    _calcArrowheadAngleDeg(x1, y1, x2, y2) {
+      let angle = 0;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+
+      if (dx === 0) {
+        angle = (dy === 0) ? 0 :
+          (dy > 0) ? Math.PI / 2 : Math.PI * 3 / 2;
+      }
+      else if (dy === 0) {
+        angle = (dx > 0) ? 0 : Math.PI;
+      }
+      else {
+        angle = (dx < 0) ? Math.atan(dy / dx) + Math.PI :
+          (dy < 0) ? Math.atan(dy / dx) + (2 * Math.PI) :
+            Math.atan(dy / dx);
+      }
+
+      return angle * 180 / Math.PI + 90;
+    },
+    createLine(opt) {
+      this.coords = opt.coords;
+      this.id = opt.id;
+      this.stroke = opt.stroke || 'rgb(40,100,40)'; //light-green
+      this.strokeWidth = opt.strokeWidth || 1;
+      this.strokeDashArray = opt.strokeDashArray || [];
+
+      return new w.fabric.Line(this.coords, {
+          id: this.id,
+          stroke: this.stroke,
+          strokeWidth: this.strokeWidth,
+          strokeDashArray: this.strokeDashArray,
+          selectable: false,
+          originX: 'center',
+          originY: 'center',
+        }
+      );
+    },
     createCircle(opt) {
       this.id = opt.id;
       this.x = opt.x;
@@ -46,7 +124,6 @@ const ERR_MSG = {
       const fill = opt.fill || 'rgb(40,100,40)'; //light-green
       const opacity = opt.opacity || 0.2;
 
-      const self = this;
       return new w.fabric.Circle({
         id: this.id,
         left: this.x,
@@ -61,28 +138,34 @@ const ERR_MSG = {
       });
     },
     createText(text, opt) {
-      const x = opt.x;
-      const y = opt.y;
-      const color = opt.color || '#ff4800';
-      const font = opt.font || "'Play'"; //"'FontAwesome'"
-      const fontSize = opt.fontSize || 14;
+      this.x = opt.x;
+      this.y = opt.y;
+      this.id = opt.id;
+      this.color = opt.color || '#ff4800';
+      this.font = opt.font || "'Play'"; //"'FontAwesome'"
+      this.fontSize = opt.fontSize || 14;
+      this.editable = opt.editable || false;
 
       return new w.fabric.IText(text, {
-        left: x,
-        top: y + 18,
-        fill: color,
-        fontSize: fontSize,
+        id: this.id,
+        left: this.x,
+        top: this.y, // + 18
+        fill: this.color,
+        backgroundColor: '#000000',
+        fontSize: this.fontSize,
+        editable: this.editable,
         selection: false,
         hasRotatingPoint: false,
         hasBorders: false,
         hasControls: false,
-        fontFamily: font,
+        fontFamily: this.font,
+        cursorColor: '#da1822',
         originX: 'center',
         originY: 'center',
         visible: false,
+        selectable: false,
       });
     },
-
     show(objects) {
       this.drawObjects(
         objects.filter((object) => {
@@ -110,9 +193,11 @@ const ERR_MSG = {
         top: center.y,
       })
     },
-    _drawObject(object) {
+    _drawObject(object, toBack = true) {
       w.scene.add(object);
-      w.scene.sendToBack(object);
+      if (toBack) {
+        w.scene.sendToBack(object);
+      }
     },
     drawObjects(objects) {
       for (const i in objects) {

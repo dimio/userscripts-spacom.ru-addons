@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Provide Spacom.Addons library functions on spacom.ru
 // @author       dimio (dimio@dimio.org)
@@ -149,18 +149,23 @@
 <i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
 <br></button>`);
     },
-    createMapButton(css_class, id, title) {
+    createMapButton(css_class, id, title, imgSrc) {
+      const img = (imgSrc) ? `<img alt="" src="${imgSrc}"/>` : '';
       const last = $('#radar + div');
       const next = $(
-        `<div id="${id}" title="${title}"><i class="fa ${css_class} fa-2x"></i></div>`).css(
-        {
-          'z-index': last.css('z-index'),
-          position: last.css('position'),
-          cursor: last.css('cursor'),
-          color: last.css('color'),
-          right: last.css('right'),
-          bottom: `${parseInt(last.css('bottom'), 10) + 40}px`,
-        });
+        `<div id="${id}" title="${title}">
+         <i class="fa ${css_class} fa-2x">
+         ${img}
+        </i>
+        </div>`)
+      .css({
+        'z-index': last.css('z-index'),
+        position: last.css('position'),
+        cursor: last.css('cursor'),
+        color: last.css('color'),
+        right: last.css('right'),
+        bottom: `${parseInt(last.css('bottom'), 10) + 40}px`,
+      });
       last.before(next);
 
       return next;
