@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Sort
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Add a sorting and filters for fleets tabs
 // @author       dimio (dimio@dimio.org)
@@ -54,7 +54,6 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
      */
     fleets: [],
 
-    markedFleets: {},
     filters: {},
     sort: {},
 
@@ -79,7 +78,6 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       }
     },
     clearFilters(subMenu) {
-      delete this.markedFleets[subMenu];
       delete this.filters[subMenu];
       delete this.sort[subMenu];
     },
@@ -122,11 +120,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       return true;
     },
     showFilteredFleets(owner, fleetType, filterBy) {
-      const filterParams = new Set();
-      for (const fleet of this.fleets) {
-        filterParams.add(fleet[filterBy]);
-      }
-
+      const filterParams = this.getFilterParams(filterBy);
       if (Addons.isObjNotEmpty(filterParams)) {
         this.getFilter(filterParams, filterBy)
         .then(
@@ -145,16 +139,38 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
         w.showSmallMessage(ERR_MSG.NO_FILTER_PARAMS);
       }
     },
-    getFilter(filterParams, filterBy) {
-      const params = Array.from(filterParams).sort(Addons.Sort.alphabetically);
+    getFilterParams(filterBy) {
+      let filterParams = {};
+      this.fleets.forEach(fleet => {
+        filterParams[this.getFilterParam(filterBy, fleet)] = fleet[filterBy];
+      });
+      filterParams = Object.fromEntries(
+        Object.entries(filterParams).sort((a, b) => {
+          return Addons.Sort.alphabetically(a[0], b[0])
+        })
+      );
+      return filterParams;
+    },
+    getFilterParam(filterBy, fleet) {
+      if (filterBy === 'star_id') {
+        const star = w.map.stars[fleet[filterBy]];
+        return star.name + '&nbsp;' + star.x + ':' + star.y;
+      }
+      return fleet[filterBy];
+    },
+    getFilter(params, filterBy) {
       const isExcludeId = 'filtering-list-exclude';
       const filter = new Filter({[filterBy]: []});
 
-      let message = `Отфильтровать по:</br><select id='fl_filter' size='${params.length
-      < 8 ? params.length : 8}' multiple='multiple'>`;
-      params.forEach(param => {
-        message += `<option>${param}</option>`;
-      });
+      let message = `Отфильтровать по:</br>
+        <select id='fl_filter' size='
+        ${Object.keys(params).length < 8 ? Object.keys(params).length + 1 : 8}'
+        multiple='multiple'>`;
+      for (const i in params) {
+        if (params.hasOwnProperty(i)) {
+          message += `<option value="${params[i]}">${i}</option>`;
+        }
+      }
       message += '</select></br>';
       message += `<input type="checkbox" id="${isExcludeId}"/>`;
       message += `<label for="${isExcludeId}">Исключить выбранное</label>`;
@@ -358,6 +374,16 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
               css_name: `filter-by-${div}`,
               title: 'Отфильтровать по владельцу',
               cb: `Addons.Fleets.Sort.showFilteredFleets('${owner}','${fleetType}','player_name')`
+            });
+          }
+          if (div === 'turn') {
+            // add the additional button before current
+            Addons.DOM.appendClickableIcon({
+              elem: divs[div],
+              icon: 'fa-crosshairs',
+              css_name: `filter-by-star_id`,
+              title: 'Отфильтровать по системе',
+              cb: `Addons.Fleets.Sort.showFilteredFleets('${owner}','${fleetType}','star_id')`
             });
           }
 
