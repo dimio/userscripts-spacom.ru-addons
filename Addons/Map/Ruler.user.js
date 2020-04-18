@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Map.Ruler
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Measure distance between stars on map
 // @author       dimio (dimio@dimio.org)
@@ -67,9 +67,9 @@ const ERR_MSG = {
 
       if (this.enabled) {
         this.leg = [];
-        w.scene.defaultCursor = `url('${this.rulerIco}'), auto`;
+        w.scene.defaultCursor = `url('${this.rulerIco}') 2 2, auto`;
         w.scene.on('mouse:over', function (e) {
-          if (e.target != null) {
+          if (e.target !== null && e.target.nature === 'star') {
             e.target.hoverCursor = 'crosshair';
           }
         });
@@ -80,7 +80,7 @@ const ERR_MSG = {
         }
         w.scene.defaultCursor = 'default';
         w.scene.on('mouse:over', function (e) {
-          if (e.target != null) {
+          if (e.target !== null) {
             e.target.hoverCursor = 'pointer';
           }
         });
@@ -150,6 +150,13 @@ const ERR_MSG = {
     },
     init() {
       this.addButton();
+
+      const self = this;
+      $(document).keyup(function (event) {
+        if (event.keyCode === 27) { // Esc
+          self.toggle(false);
+        }
+      });
 
       const _clickMapStar = w.map.clickMapStar;
       w.map.clickMapStar = function (id, fleet_id) {
