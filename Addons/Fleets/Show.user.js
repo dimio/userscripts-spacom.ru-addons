@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Show
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Some improvements on fleet show window
 // @author       dimio (dimio@dimio.org)
@@ -38,6 +38,10 @@ const ERR_MSG = {
   }
 
   w.Addons.Fleets.Show = {
+    OPT: {
+      showShipsCount: true,
+      showSystemName: true,
+    },
     shipsCount: {
       calc(ships) {
         const shipCount = {};
@@ -59,16 +63,29 @@ const ERR_MSG = {
         )
       },
     },
+    systemName: {
+      showOnFleetBlock() {
+        const fleetBlockTmpl = $('#fleet_instance');
+        fleetBlockTmpl.html(fleetBlockTmpl.html().replace('y +',
+          '$& "<br><span>" + map.stars[star_id].name + "</span>" + '));
+      },
+    },
 
     init() {
-      const self = this;
-      const _showFleetShips = w.map.showFleetShips;
-      w.map.showFleetShips = (function (json) {
-        _showFleetShips.call(this, json);
-        self.shipsCount.show(
-          self.shipsCount.calc(json.fleets.fleet.ships)
-        );
-      });
+      if (this.OPT.showSystemName) {
+        this.systemName.showOnFleetBlock();
+      }
+
+      if (this.OPT.showShipsCount) {
+        const self = this;
+        const _showFleetShips = w.map.showFleetShips;
+        w.map.showFleetShips = (function (json) {
+          _showFleetShips.call(this, json);
+          self.shipsCount.show(
+            self.shipsCount.calc(json.fleets.fleet.ships)
+          );
+        });
+      }
     }
   };
 
