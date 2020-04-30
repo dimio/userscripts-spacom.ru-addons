@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Summary
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  none
 // @author       dimio (dimio@dimio.org)
@@ -117,7 +117,12 @@ const ERR_MSG = {
       if (!this.summaryFleets[ties]) {
         this.summaryFleets[ties] = [];
       }
-      this.summaryFleets[ties].push(...Addons.Fleets.Sort.fleets);
+      //NOTE: split non-own fleets and garrisons in Fleets.Sort and remove this filter
+      this.summaryFleets[ties].push(
+        ...Addons.Fleets.Sort.fleets.filter(f => {
+          return f.ico !== null && f.ico !== 'garrison.png'
+        })
+      );
       this.summaryTab.toggle(true);
     },
     addAllToSummaryButton() {
@@ -135,8 +140,9 @@ const ERR_MSG = {
     },
     init() {
       this.addAllToSummaryButton();
-      const self = this;
+
       if (!this.summaryTab) {
+        const self = this;
         this.summaryTab = Addons.DOM.createNaviBarButton('Сравнить', 6,
           'return false;')
         .on('click',
