@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         Spacom.Addons.Map.ShowViewZones
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Show on a map view zones for fleets and colonized systems
-// @author       dimio (dimio@dimio.org)
-// @author       segrey
+// @author       dimio (dimio@dimio.org), segrey
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
@@ -18,30 +17,34 @@
  * Based on "Spacom addons" by segrey:
  * https://greasyfork.org/en/scripts/27897-spacom-addons
  **/
-//console.log('Spacom.Addons.Map.ShowViwZones');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы Spacom.Addons.Map.ShowViewZones необходимо установить и включить Spacom.Addons
-<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+<li>Spacom.Addons.Map.Scene</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
+  'use strict';
+
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons || !Addons.Map.Scene) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Map) {
-    w.Addons.Map = {};
-  }
-  const Addons = w.Addons;
 
-  Addons.Map.ShowViewzones = {
+  Addons.Map.ViewZones = {
     button: null,
     circles: null,
     enabled: false,
@@ -59,7 +62,7 @@ const ERR_MSG = {
         if (fleets.hasOwnProperty(i)) {
           const fleet = fleets[i];
 
-          const center = Addons.getObjCenter({
+          const center = Addons.Common.getObjCenter({
             obj: fleet,
             mode: 'viewzone',
           });
@@ -108,7 +111,7 @@ const ERR_MSG = {
   };
 
   if (w.map) {
-    Addons.Map.ShowViewzones.init();
+    Addons.Map.ViewZones.init();
   }
 
 })(window);

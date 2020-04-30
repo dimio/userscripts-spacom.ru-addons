@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Show
-// @version      0.1.2
+// @version      0.1.3
 // @namespace    http://dimio.org/
 // @description  Some improvements on fleet show window
 // @author       dimio (dimio@dimio.org)
@@ -13,11 +13,15 @@
 // @include      http*://spacom.ru/?act=game/map*
 // @run-at       document-end
 // ==/UserScript==
-// console.log('Spacom.Addons.Fleets.Show booted');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы Spacom.Addons.Fleets.Show необходимо установить и включить Spacom.Addons
-<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
@@ -25,19 +29,17 @@ const ERR_MSG = {
 
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Fleets) {
-    w.Addons.Fleets = {};
-  }
 
-  w.Addons.Fleets.Show = {
+  Addons.Fleets.Show = {
     OPT: {
       showShipsCount: true,
       showSystemName: true,
@@ -46,7 +48,7 @@ const ERR_MSG = {
       calc(ships) {
         const shipCount = {};
         //garrison ships not defined
-        if (w.Addons.isVariableDefined(ships)) {
+        if (Addons.Common.isVariableDefined(ships)) {
           ships.forEach((ship) => {
             shipCount[ship.image] = (shipCount[ship.image] || 0) + 1;
           });
@@ -54,10 +56,10 @@ const ERR_MSG = {
         return shipCount;
       },
       show(shipCount) {
-        w.$('.fleet_ico_container').each(
+        $('.fleet_ico_container').each(
           function () {
-            w.$(this).append(
-              shipCount[w.$(this).children('img').attr('src').split(
+            $(this).append(
+              shipCount[$(this).children('img').attr('src').split(
                 '/')[3]]);
           }
         )
@@ -89,6 +91,6 @@ const ERR_MSG = {
     }
   };
 
-  w.Addons.Fleets.Show.init();
+  Addons.Fleets.Show.init();
 
 })(window);

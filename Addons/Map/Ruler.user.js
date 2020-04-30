@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Map.Ruler
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Measure distance between stars on map
 // @author       dimio (dimio@dimio.org)
@@ -11,30 +11,18 @@
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=game/map*
 // @include      http*://spacom.ru/?act=game/map*
-// @run-at       document-end
+// @run-at       document-idle
 // ==/UserScript==
-// console.log('Spacom.Addons.Map.Ruler booted');
-
-const SETTINGS = {
-  COLOR: {
-    default: '#37ff87',
-  },
-  DASH: {
-    isDashed: false,
-    pattern: [5, 20, 20, 5],
-  },
-  TEXT: {
-    addTurn: true,
-  },
-};
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы Spacom.Addons.Map.Ruler необходимо установить и включить следующие дополнения:
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
 <ul>
 <li>Spacom.Addons</li>
 <li>Spacom.Addons.Map.Scene</li>
 </ul>
-<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
@@ -42,20 +30,30 @@ const ERR_MSG = {
 
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons || !w.Addons.Map.Scene) {
+  if (!Addons || !Addons.Map.Scene) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Map) {
-    w.Addons.Map = {};
-  }
-  const Addons = w.Addons;
 
   Addons.Map.Ruler = {
+    OPT: {
+      COLOR: {
+        default: '#37ff87',
+      },
+      DASH: {
+        isDashed: false,
+        pattern: [5, 20, 20, 5],
+      },
+      TEXT: {
+        addTurn: true,
+      },
+    },
+
     button: null,
     enabled: false,
     title: 'Вкл/Выкл линейку',
@@ -76,7 +74,7 @@ const ERR_MSG = {
       }
       else {
         if (this.leg.length > 1) {
-          this.path.push({color: SETTINGS.COLOR.default, line: this.line});
+          this.path.push({color: this.OPT.COLOR.default, line: this.line});
         }
         w.scene.defaultCursor = 'default';
         w.scene.on('mouse:over', function (e) {
@@ -94,7 +92,7 @@ const ERR_MSG = {
         let curr = this.leg[this.leg.length - 1];
         if (curr.id === prev.id) {
           this.leg.shift();
-          this.path.push({color: SETTINGS.COLOR.default, line: this.line});
+          this.path.push({color: this.OPT.COLOR.default, line: this.line});
           this.toggle(true);
           return;
         }
@@ -109,29 +107,28 @@ const ERR_MSG = {
       const line = Addons.Map.Scene.createLine({
         coords: [p1.center.x, p1.center.y, p2.center.x, p2.center.y],
         id: id,
-        stroke: SETTINGS.COLOR.default,
-        strokeDashArray: SETTINGS.DASH.isDashed ?
-          SETTINGS.DASH.pattern : [],
+        stroke: this.OPT.COLOR.default,
+        strokeDashArray: this.OPT.DASH.isDashed ?
+          this.OPT.DASH.pattern : [],
       });
       const arrow = Addons.Map.Scene.addArrowhead(
         line,
         {
           id: id,
-          fill: SETTINGS.COLOR.default,
+          fill: this.OPT.COLOR.default,
         });
       const text = Addons.Map.Scene.createText(
         distance.toLocaleString() +
-        (SETTINGS.TEXT.addTurn ? `\nХод: ${w.turn}` : ''),
+        (this.OPT.TEXT.addTurn ? `\nХод: ${w.turn}` : ''),
         {
           id: id,
           x: (line.x1 + line.x2) / 2,
           y: (line.y1 + line.y2) / 2,
-          color: SETTINGS.COLOR.default,
+          color: this.OPT.COLOR.default,
           editable: true,
         });
       Addons.Map.Scene.show([text, arrow]);
       w.scene.setActiveObject(text);
-      // console.log(JSON.stringify([leg, text]))
     },
     getDistance(from, to) {
       return w.distance(

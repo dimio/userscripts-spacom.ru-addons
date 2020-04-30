@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Provide Spacom.Addons library functions on spacom.ru
 // @author       dimio (dimio@dimio.org)
@@ -13,7 +13,7 @@
 // @include      http*://spacom.ru/*
 // @run-at       document-start
 // ==/UserScript==
-//console.log('Spacom.Addons booted');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
 
 (function (window) {
   'use strict';
@@ -25,10 +25,21 @@
     return;
   }
   if (!w.Addons) {
-    w.Addons = {};
+    w.Addons = {
+      // w: w,
+      Common: {},
+      Decor: {},
+      Design: {},
+      DOM: {},
+      Fleets: {},
+      Map: {},
+      Sort: {},
+      Stars: {},
+    };
   }
+  const Addons = w.Addons;
 
-  w.Addons = {
+  Addons.Common = {
     waitFor(obj, prop, callback) {
       const token = setInterval(() => {
         if (typeof obj[prop] !== 'undefined') {
@@ -72,15 +83,12 @@
       }
       return value !== null;
     },
-    isObjValuesNotUndefinedOnly(obj) {
-      return Object.values(obj).filter(this.isVariableDefined).length > 0;
-    },
     isObjNotEmpty(obj) {
       return Object.keys(obj).length !== 0 || obj.size !== 0;
     },
   };
 
-  w.Addons.DOM = {
+  Addons.DOM = {
     appendClickableIcon(opt) {
       const elem = opt.elem;
       const icon = opt.icon;
@@ -118,7 +126,8 @@
     replaceContent(elem) {
       $(elem).empty();
 
-      for (let i = 1; i < arguments.length; i++) {
+      for (let i = 2; i < arguments.length; i++) {
+        // for (let i = 1; i < arguments.length; i++) {
         $(elem).append(arguments[i]);
       }
 
@@ -172,7 +181,7 @@
     },
   };
 
-  w.Addons.Sort = {
+  Addons.Sort = {
     alphabetically(a, b) {
       return a.localeCompare(b);
     },

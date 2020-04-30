@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Decor
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Some game interface view improvements
 // @author       dimio (dimio@dimio.org)
@@ -13,25 +13,38 @@
 // @include      http*://spacom.ru/*
 // @run-at       document-end
 // ==/UserScript==
-// console.log('Spacom.Addons.Decor booted');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
-const SETTINGS = {
-  formatNumbers: true,
-  addGlobalTurn: true,
+const ERR_MSG = {
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
+  'use strict';
+
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons.Decor) {
-    w.Addons.Decor = {};
+  if (!Addons) {
+    w.showSmallMessage(ERR_MSG.NO_LIB);
+    return;
   }
 
-  w.Addons.Decor = {
+  Addons.Decor = {
+    OPT: {
+      formatNumbers: true,
+      addGlobalTurn: true,
+    },
+
     formatShortNumber() {
       const _short_number = w.short_number;
       w.short_number = function (number) {
@@ -46,21 +59,21 @@ const SETTINGS = {
       w.parseAnswer = function (json, type) {
         _parseAnswer.call(self, ...arguments);
         const lengthCounter = json['info']['length_counter'];
-        if (w.Addons.isVariableDefined(lengthCounter) && lengthCounter > "0") {
+        if (Addons.Common.isVariableDefined(lengthCounter) && lengthCounter > "0") {
           $("#turn_num").append('&nbsp;[' + w.turn + ']')
         }
       };
     },
     init() {
-      if (SETTINGS.formatNumbers) {
+      if (this.OPT.formatNumbers) {
         this.formatShortNumber();
       }
-      if (SETTINGS.addGlobalTurn) {
+      if (this.OPT.addGlobalTurn) {
         this.addServerGlobalTurn();
       }
     },
   };
 
-  w.Addons.Decor.init();
+  Addons.Decor.init();
 
 })(window);

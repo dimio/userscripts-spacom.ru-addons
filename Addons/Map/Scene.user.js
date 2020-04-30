@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Map.Scene
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Draw on map
 // @author       dimio (dimio@dimio.org)
@@ -13,11 +13,15 @@
 // @include      http*://spacom.ru/?act=game/map*
 // @run-at       document-end
 // ==/UserScript==
-// console.log('Spacom.Addons.Map.Scene booted');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы Spacom.Addons.Map.Scene необходимо установить и включить Spacom.Addons
-<a href="https://github.com/dimio/userscripts-spacom.ru-addons">https://github.com/dimio/userscripts-spacom.ru-addons</a>`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
@@ -25,18 +29,15 @@ const ERR_MSG = {
 
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Map) {
-    w.Addons.Map = {};
-  }
-  const Addons = w.Addons;
 
   Addons.Map.Scene = {
     addArrowhead(line, opt) {
