@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Show
-// @version      0.1.3
+// @version      0.1.4
 // @namespace    http://dimio.org/
 // @description  Some improvements on fleet show window
 // @author       dimio (dimio@dimio.org)
@@ -43,6 +43,10 @@ const ERR_MSG = {
     OPT: {
       showShipsCount: true,
       showSystemName: true,
+      showShipsHP: {
+        enable: true,
+        remainingHpRatio: 1, //0.9 by default
+      },
     },
     shipsCount: {
       calc(ships) {
@@ -64,6 +68,15 @@ const ERR_MSG = {
           }
         )
       },
+    },
+    shipsHp: {
+      showRemainingHpWithRatio(){
+        const shipsBlockTmpl = $('#ship_block');
+        shipsBlockTmpl.html(shipsBlockTmpl.html().replace(
+          'if (parseInt(hp) < parseInt(hp_max * 0.9))',
+          `if (parseInt(hp) < parseInt(hp_max * ${Addons.Fleets.Show.OPT.showShipsHP.remainingHpRatio}))`
+        ));
+      }
     },
     systemName: {
       showOnFleetBlock() {
@@ -87,6 +100,10 @@ const ERR_MSG = {
             self.shipsCount.calc(json.fleets.fleet.ships)
           );
         });
+      }
+
+      if (this.OPT.showShipsHP.enable){
+        this.shipsHp.showRemainingHpWithRatio();
       }
     }
   };
