@@ -117,6 +117,10 @@ const ERR_MSG = {
       if (Addons.Fleets.MarkOnMap) {
         Addons.Fleets.MarkOnMap.init();
       }
+      // add summary button
+      if (Addons.Fleets.Summary) {
+        Addons.Fleets.Summary.init();
+      }
 
       return true;
     },

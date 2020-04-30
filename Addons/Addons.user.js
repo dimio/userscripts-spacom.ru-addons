@@ -123,8 +123,11 @@ console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
 
       return elem;
     },
-    replaceContent(elem) {
-      $(elem).empty();
+    replaceContent(elem, clearElem) {
+      // replaceContent(elem) {
+      if (clearElem) {
+        $(elem).empty();
+      }
 
       for (let i = 2; i < arguments.length; i++) {
         // for (let i = 1; i < arguments.length; i++) {
@@ -187,6 +190,13 @@ console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
     },
     numerically(a, b) {
       return parseFloat(a) - parseFloat(b);
+    },
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+    uniqueArray(array) {
+      // return array.filter((value, index, self) => {
+      //   return self.indexOf(value) === index;
+      // })
+      return [...new Set(array)]
     },
   };
 
