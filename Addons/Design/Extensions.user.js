@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         Spacom.Addons.Design.Extensions
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
-// @author       segrey
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
@@ -14,46 +13,53 @@
 // @include      http*://spacom.ru/?act=game/design*
 // @run-at       document-end
 // ==/UserScript==
-//
 // An "All levels" addon - developed by segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
-// console.log("Spacom.Addons.Design.Extensions booted");
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
+
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнений необходимо установить Spacom.Addons:<br>
-    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
-const COMPONENT_MAX_LEVEL = 30;
 
 (function (window) {
+  'use strict';
+
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Design) {
-    w.Addons.Design = {};
-  }
 
-  w.Addons.Design.ExtraInfo = {
+  Addons.Design.OPT = {
+    COMPONENT_MAX_LEVEL: 30,
+  };
+
+  Addons.Design.ExtraInfo = {
     makeDesignInfoTemplate() {
       let designInfoTemplate = document.getElementById(
-          'design_info_template').innerHTML;
+        'design_info_template').innerHTML;
       designInfoTemplate = designInfoTemplate.replace(
-          "lazer_shots'] + '&nbsp;' : '' %>",
-          "lazer_shots'] + ' <span class=\"lazer_attack\" title=\"Суммарная атака лазеров\">&sum;&nbsp;</span>' + params['laser_power_sum'] + '&nbsp;' : '' %>");
+        "lazer_shots'] + '&nbsp;' : '' %>",
+        "lazer_shots'] + ' <span class=\"lazer_attack\" title=\"Суммарная атака лазеров\">&sum;&nbsp;</span>' + params['laser_power_sum'] + '&nbsp;' : '' %>");
       designInfoTemplate = designInfoTemplate.replace(
-          "lazer_defence'] + '%&nbsp;' : '' %>",
-          "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&shy;' : '' %>");
+        "lazer_defence'] + '%&nbsp;' : '' %>",
+        "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&shy;' : '' %>");
       designInfoTemplate = designInfoTemplate.replace(
-          "cannon_defence'] + '&nbsp;' : '' %>",
-          "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
+        "cannon_defence'] + '&nbsp;' : '' %>",
+        "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
       designInfoTemplate = designInfoTemplate.replace(
-          "cannon_targets'] + '&nbsp;' : '' %>",
-          "cannon_targets'] + ' <span class=\"cannon_attack\" title=\"Суммарная атака пушек\">&sum;&nbsp;</span>' + params['cannon_power_sum'] + '&nbsp;' : '' %>");
+        "cannon_targets'] + '&nbsp;' : '' %>",
+        "cannon_targets'] + ' <span class=\"cannon_attack\" title=\"Суммарная атака пушек\">&sum;&nbsp;</span>' + params['cannon_power_sum'] + '&nbsp;' : '' %>");
 
       const designInfoTemplateTail = `'' %>
         <%= ( params['ship_power'] > '0' ) ?
@@ -65,10 +71,10 @@ const COMPONENT_MAX_LEVEL = 30;
         : '' %>
         </div>`;
       designInfoTemplate = designInfoTemplate.replace(/'' %>\s*<\/div>/,
-          designInfoTemplateTail);
+        designInfoTemplateTail);
 
       document.getElementById(
-          'design_info_template').innerHTML = designInfoTemplate;
+        'design_info_template').innerHTML = designInfoTemplate;
     },
     calcLaserPowerSum(params) {
       return params.lazer_power * params.lazer_shots;
@@ -92,15 +98,15 @@ const COMPONENT_MAX_LEVEL = 30;
       // Если считать приближенно (точность 95%), то мощь корабля -
       // это корень из произведения его живучести и суммарного урона.
       let shipPower = Math.sqrt(params.hp *
-          this.calcShipStatsTotal(params.laser_power_sum,
-              params.cannon_power_sum, params.rocket_power)
+        this.calcShipStatsTotal(params.laser_power_sum,
+          params.cannon_power_sum, params.rocket_power)
       );
       return Math.round(shipPower);
     },
     calcShipDpR(params) {
       return +(this.calcShipStatsTotal(
-          params.laser_power_sum, params.cannon_power_sum, params.rocket_power)
-          / params.money_rent).toFixed(2);
+        params.laser_power_sum, params.cannon_power_sum, params.rocket_power)
+        / params.money_rent).toFixed(2);
     },
     init() {
       const self = this;
@@ -114,8 +120,8 @@ const COMPONENT_MAX_LEVEL = 30;
         design.params.laser_power_sum = self.calcLaserPowerSum(design.params);
         design.params.laser_eq_hp = self.calcLaserEqHp(design.params);
         design.params.laser_defence_hp = self.calcLaserHp(
-            design.params.hp,
-            design.params.laser_eq_hp
+          design.params.hp,
+          design.params.laser_eq_hp
         );
 
         design.params.cannon_power_sum = design.params.cannon_power;
@@ -130,8 +136,8 @@ const COMPONENT_MAX_LEVEL = 30;
       design.draw = function () {
         _designDraw.apply(this);
         $('#design_info').html(
-            w.tmpl(document.getElementById('design_info_template').innerHTML,
-                this));
+          w.tmpl(document.getElementById('design_info_template').innerHTML,
+            this));
       };
 
       design.calc();
@@ -140,14 +146,14 @@ const COMPONENT_MAX_LEVEL = 30;
   };
 
   //FIXME: known levels not show for non-new designs
-  w.Addons.Design.DetailKnownLevel = {
+  Addons.Design.DetailKnownLevel = {
     makeDetailInstanceTemplate() {
       let detailInstanceTemplate = document.getElementById(
-          'detail_instance').innerHTML;
+        'detail_instance').innerHTML;
       detailInstanceTemplate = detailInstanceTemplate.replace(/<%=level%>\n/,
-          '<%=level%><div title="Изученный уровень детали">(<%=known_level%>)</div>');
+        '<%=level%><div title="Изученный уровень детали">(<%=known_level%>)</div>');
       document.getElementById(
-          'detail_instance').innerHTML = detailInstanceTemplate;
+        'detail_instance').innerHTML = detailInstanceTemplate;
     },
     init() {
       this.makeDetailInstanceTemplate();
@@ -168,11 +174,11 @@ const COMPONENT_MAX_LEVEL = 30;
     },
   };
 
-  w.Addons.Design.AllLevels = {
+  Addons.Design.AllLevels = {
     // Based on AllLevels by segray (https://greasyfork.org/ru/scripts/27897-spacom-addons)
     enable() {
       w.design.template_components.forEach(c => {
-        c.max_level = COMPONENT_MAX_LEVEL
+        c.max_level = Addons.Design.OPT.COMPONENT_MAX_LEVEL;
       });
       w.design.draw();
     },
@@ -185,11 +191,12 @@ const COMPONENT_MAX_LEVEL = 30;
     init() {
       const self = this;
       $('#details_list').prepend(
-          '<span><input id="all_levels" type="checkbox"> все уровни</span>');
+        '<span><input id="all_levels" type="checkbox"> все уровни</span>');
       $('#all_levels').on('change', function () {
         if ($(this).is(':checked')) {
           self.enable();
-        } else {
+        }
+        else {
           self.disable();
         }
       });
@@ -201,12 +208,12 @@ const COMPONENT_MAX_LEVEL = 30;
   };
 
   if (w.Design) {
-    w.Addons.waitFor(w, 'design', () => {
-      w.Addons.Design.ExtraInfo.init();
-      w.Addons.Design.DetailKnownLevel.init();
+    Addons.Common.waitFor(w, 'design', () => {
+      Addons.Design.ExtraInfo.init();
+      Addons.Design.DetailKnownLevel.init();
       // be backwards-compatible with "spacom-addons" userscript by segrey
-      if (!w.Addons.AllLevels) {
-        w.Addons.Design.AllLevels.init();
+      if (!Addons.AllLevels) {
+        Addons.Design.AllLevels.init();
       }
     });
   }

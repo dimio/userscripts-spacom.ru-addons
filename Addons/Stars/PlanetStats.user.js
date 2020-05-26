@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Stars.PlanetStats
-// @version      0.1.0
+// @version      0.1.1
 // @namespace    http://dimio.org/
 // @description  Show summary planets stats in star system window
 // @author       dimio (dimio@dimio.org)
@@ -9,30 +9,34 @@
 // @supportURL   https://github.com/dimio/userscripts-spacom.ru-addons/issues
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
-// @match        http*://spacom.ru/?act=game/map
-// @include      http*://spacom.ru/?act=game/map
+// @match        http*://spacom.ru/?act=game/map*
+// @include      http*://spacom.ru/?act=game/map*
 // @run-at       document-end
 // ==/UserScript==
-// console.log("Spacom.Addons.Stars.PlanetStats booted");
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнений необходимо установить Spacom.Addons:<br>
-    https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
+  'use strict';
+
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
-  }
-  if (!w.Addons.Stars) {
-    w.Addons.Stars = {};
   }
 
   w.Addons.Stars.PlanetStats = {
@@ -68,7 +72,7 @@ const ERR_MSG = {
         }
         _showStarPlanets.call(this, json);
         $("#items_list .row.player_fleet_title .col-xs-12.col-md-4").append(
-            w.tmpl("planets_total_stats", self));
+          w.tmpl("planets_total_stats", self));
       };
     },
     makeTotalStatsTemplate() {
@@ -112,10 +116,10 @@ if (typeof STATS_TOTAL != 'undefined' && !isNaN(STATS_TOTAL.populationmax_base))
 %>
 `;
       document.getElementById("allcontent").appendChild(
-          planetsStatsTotalTemplate);
+        planetsStatsTotalTemplate);
     },
   };
 
-  w.Addons.Stars.PlanetStats.init();
+  Addons.Stars.PlanetStats.init();
 
 })(window);

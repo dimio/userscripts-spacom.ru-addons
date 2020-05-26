@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons
-// @version      0.1.0
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Provide Spacom.Addons library functions on spacom.ru
 // @author       dimio (dimio@dimio.org)
@@ -13,7 +13,7 @@
 // @include      http*://spacom.ru/*
 // @run-at       document-start
 // ==/UserScript==
-//console.log('Spacom.Addons booted');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
 
 (function (window) {
   'use strict';
@@ -25,10 +25,21 @@
     return;
   }
   if (!w.Addons) {
-    w.Addons = {};
+    w.Addons = {
+      // w: w,
+      Common: {},
+      Decor: {},
+      Design: {},
+      DOM: {},
+      Fleets: {},
+      Map: {},
+      Sort: {},
+      Stars: {},
+    };
   }
+  const Addons = w.Addons;
 
-  w.Addons = {
+  Addons.Common = {
     waitFor(obj, prop, callback) {
       const token = setInterval(() => {
         if (typeof obj[prop] !== 'undefined') {
@@ -72,15 +83,12 @@
       }
       return value !== null;
     },
-    isObjValuesNotUndefinedOnly(obj) {
-      return Object.values(obj).filter(this.isVariableDefined).length > 0;
-    },
     isObjNotEmpty(obj) {
       return Object.keys(obj).length !== 0 || obj.size !== 0;
     },
   };
 
-  w.Addons.DOM = {
+  Addons.DOM = {
     appendClickableIcon(opt) {
       const elem = opt.elem;
       const icon = opt.icon;
@@ -115,10 +123,14 @@
 
       return elem;
     },
-    replaceContent(elem) {
-      $(elem).empty();
+    replaceContent(elem, clearElem) {
+      // replaceContent(elem) {
+      if (clearElem) {
+        $(elem).empty();
+      }
 
-      for (let i = 1; i < arguments.length; i++) {
+      for (let i = 2; i < arguments.length; i++) {
+        // for (let i = 1; i < arguments.length; i++) {
         $(elem).append(arguments[i]);
       }
 
@@ -149,30 +161,42 @@
 <i class="${css_class}" aria-hidden="true"></i> <br><span class="button-text">${btn_text}</span>
 <br></button>`);
     },
-    createMapButton(css_class, id, title) {
+    createMapButton(css_class, id, title, imgSrc) {
+      const img = (imgSrc) ? `<img alt="" src="${imgSrc}"/>` : '';
       const last = $('#radar + div');
       const next = $(
-        `<div id="${id}" title="${title}"><i class="fa ${css_class} fa-2x"></i></div>`).css(
-        {
-          'z-index': last.css('z-index'),
-          position: last.css('position'),
-          cursor: last.css('cursor'),
-          color: last.css('color'),
-          right: last.css('right'),
-          bottom: `${parseInt(last.css('bottom'), 10) + 40}px`,
-        });
+        `<div id="${id}" title="${title}">
+         <i class="fa ${css_class} fa-2x">
+         ${img}
+        </i>
+        </div>`)
+      .css({
+        'z-index': last.css('z-index'),
+        position: last.css('position'),
+        cursor: last.css('cursor'),
+        color: last.css('color'),
+        right: last.css('right'),
+        bottom: `${parseInt(last.css('bottom'), 10) + 40}px`,
+      });
       last.before(next);
 
       return next;
     },
   };
 
-  w.Addons.Sort = {
+  Addons.Sort = {
     alphabetically(a, b) {
       return a.localeCompare(b);
     },
     numerically(a, b) {
       return parseFloat(a) - parseFloat(b);
+    },
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+    uniqueArray(array) {
+      // return array.filter((value, index, self) => {
+      //   return self.indexOf(value) === index;
+      // })
+      return [...new Set(array)]
     },
   };
 

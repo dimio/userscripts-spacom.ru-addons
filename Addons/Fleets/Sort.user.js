@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Sort
-// @version      0.1.1
+// @version      0.1.3
 // @namespace    http://dimio.org/
 // @description  Add a sorting and filters for fleets tabs
 // @author       dimio (dimio@dimio.org)
@@ -13,11 +13,15 @@
 // @include      http*://spacom.ru/?act=game/map*
 // @run-at       document-end
 // ==/UserScript==
-console.log('Spacom.Addons.Fleets.Sort booted');
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.Addons:<br>
-https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
   NO_FILTER_PARAMS: `Не найдены параметры для фильтрации.
 Для сброса фильтров закройте и откройте заново текущую вкладку флотов.`,
   NO_FILTER_SELECTED: `Условия фильтрации не указаны.`,
@@ -28,18 +32,15 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
 
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Fleets) {
-    w.Addons.Fleets = {};
-  }
-  const Addons = w.Addons;
 
   function Filter(by, isExclude = false) {
     this.by = by;
@@ -54,7 +55,6 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
      */
     fleets: [],
 
-    markedFleets: {},
     filters: {},
     sort: {},
 
@@ -68,18 +68,17 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       return subMenu;
     },
     createDefaultFilters(owner, fleetType) {
-      if (!Addons.isVariableDefined(this.filters[w.sub_menu])) {
+      if (!Addons.Common.isVariableDefined(this.filters[w.sub_menu])) {
         this.filters[w.sub_menu] = [
           new Filter({'type': [fleetType], 'owner': [owner]}),
           new Filter({'weight': ["0"]}, true)
         ];
       }
-      if (!Addons.isVariableDefined(this.sort[w.sub_menu])) {
+      if (!Addons.Common.isVariableDefined(this.sort[w.sub_menu])) {
         this.sort[w.sub_menu] = {};
       }
     },
     clearFilters(subMenu) {
-      delete this.markedFleets[subMenu];
       delete this.filters[subMenu];
       delete this.sort[subMenu];
     },
@@ -118,16 +117,16 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       if (Addons.Fleets.MarkOnMap) {
         Addons.Fleets.MarkOnMap.init();
       }
+      // add summary button
+      if (Addons.Fleets.Summary) {
+        Addons.Fleets.Summary.init();
+      }
 
       return true;
     },
     showFilteredFleets(owner, fleetType, filterBy) {
-      const filterParams = new Set();
-      for (const fleet of this.fleets) {
-        filterParams.add(fleet[filterBy]);
-      }
-
-      if (Addons.isObjNotEmpty(filterParams)) {
+      const filterParams = this.getFilterParams(filterBy);
+      if (Addons.Common.isObjNotEmpty(filterParams)) {
         this.getFilter(filterParams, filterBy)
         .then(
           filter => {
@@ -145,16 +144,38 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
         w.showSmallMessage(ERR_MSG.NO_FILTER_PARAMS);
       }
     },
-    getFilter(filterParams, filterBy) {
-      const params = Array.from(filterParams).sort(Addons.Sort.alphabetically);
+    getFilterParams(filterBy) {
+      let filterParams = {};
+      this.fleets.forEach(fleet => {
+        filterParams[this.getFilterParam(filterBy, fleet)] = fleet[filterBy];
+      });
+      filterParams = Object.fromEntries(
+        Object.entries(filterParams).sort((a, b) => {
+          return Addons.Sort.alphabetically(a[0], b[0])
+        })
+      );
+      return filterParams;
+    },
+    getFilterParam(filterBy, fleet) {
+      if (filterBy === 'star_id') {
+        const star = w.map.stars[fleet[filterBy]];
+        return star.name + '&nbsp;' + star.x + ':' + star.y;
+      }
+      return fleet[filterBy];
+    },
+    getFilter(params, filterBy) {
       const isExcludeId = 'filtering-list-exclude';
       const filter = new Filter({[filterBy]: []});
 
-      let message = `Отфильтровать по:</br><select id='fl_filter' size='${params.length
-      < 8 ? params.length : 8}' multiple='multiple'>`;
-      params.forEach(param => {
-        message += `<option>${param}</option>`;
-      });
+      let message = `Отфильтровать по:</br>
+        <select id='fl_filter' size='
+        ${Object.keys(params).length < 8 ? Object.keys(params).length + 1 : 8}'
+        multiple='multiple'>`;
+      for (const i in params) {
+        if (params.hasOwnProperty(i)) {
+          message += `<option value="${params[i]}">${i}</option>`;
+        }
+      }
       message += '</select></br>';
       message += `<input type="checkbox" id="${isExcludeId}"/>`;
       message += `<label for="${isExcludeId}">Исключить выбранное</label>`;
@@ -173,13 +194,13 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
         .click(function () {
           $('#fl_filter').change();
           $.modal.close();
-          Addons.isVariableDefined(filter.by[filterBy])
+          Addons.Common.isVariableDefined(filter.by[filterBy])
             ? resolve(filter) : reject();
         });
       });
     },
     sortFleets(owner, sortBy, redraw) {
-      if (Addons.isVariableDefined(this.sort[w.sub_menu]["last"])
+      if (Addons.Common.isVariableDefined(this.sort[w.sub_menu]["last"])
         && (!redraw || sortBy === 'weight')) {
         this.sortBy(this.fleets, this.sort[w.sub_menu]["last"], owner);
       }
@@ -207,7 +228,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       return (fleet.ico !== null) ? fleet.ico : "garrison.png";
     },
     filterBy(fleets, filter) {
-      if (Addons.isObjNotEmpty(fleets)) {
+      if (Addons.Common.isObjNotEmpty(fleets)) {
         const keys = Object.keys(filter.by);
         const values = Object.values(filter.by);
 
@@ -278,10 +299,10 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
       // return fleets;
     },
     drawFleetsTab(fleets) {
-      if (fleets && Addons.isObjNotEmpty(fleets)) {
+      if (fleets && Addons.Common.isObjNotEmpty(fleets)) {
         $('#items_list').append(w.tmpl('fleets_title', fleets));
         for (const fleet of fleets) {
-          if (Addons.isVariableDefined(fleet)) {
+          if (Addons.Common.isVariableDefined(fleet)) {
             w.map.showBlockFleet(fleet, fleet.owner);
           }
         }
@@ -312,7 +333,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
     addButtons(owner, fleetType) {
       const timerID = setInterval(() => {
         const divs = this.getNaviDivs();
-        if (Addons.isObjNotEmpty(divs)) {
+        if (Addons.Common.isObjNotEmpty(divs)) {
           clearInterval(timerID);
           this.addSortButtons(divs, owner, fleetType);
           this.addFilterButtons(divs, owner, fleetType);
@@ -322,7 +343,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
     addSortButtons(divs, owner, fleetType) {
       // div match a sortBy
       for (let div in divs) {
-        if (divs.hasOwnProperty(div) && Addons.isVariableDefined(divs[div])) {
+        if (divs.hasOwnProperty(div) && Addons.Common.isVariableDefined(divs[div])) {
           if (fleetType === "garrison") {
             if (div !== "ico" && div !== "stat") {
               continue;
@@ -341,7 +362,7 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
     addFilterButtons(divs, owner, fleetType) {
       // div match a filterBy
       for (let div in divs) {
-        if (divs.hasOwnProperty(div) && Addons.isVariableDefined(divs[div])) {
+        if (divs.hasOwnProperty(div) && Addons.Common.isVariableDefined(divs[div])) {
           if (div === 'fleet_speed' || div === 'stat') {
             continue;
           }
@@ -360,6 +381,16 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
               cb: `Addons.Fleets.Sort.showFilteredFleets('${owner}','${fleetType}','player_name')`
             });
           }
+          if (div === 'turn') {
+            // add the additional button before current
+            Addons.DOM.appendClickableIcon({
+              elem: divs[div],
+              icon: 'fa-crosshairs',
+              css_name: `filter-by-star_id`,
+              title: 'Отфильтровать по системе',
+              cb: `Addons.Fleets.Sort.showFilteredFleets('${owner}','${fleetType}','star_id')`
+            });
+          }
 
           Addons.DOM.appendClickableIcon({
             elem: divs[div],
@@ -370,20 +401,6 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
           });
         }
       }
-    },
-    fillMarkedFleets(fleets) {
-      // для корректной работы подсветки на карте - развернуть
-      // отфильтрованный массив в хэш (уникальность ключей)
-      for (const fleet of fleets) {
-        // const fleet = sortedFleets[i];
-        if (fleet.fleet_id in this.markedFleets) {
-          continue;
-        }
-        this.markedFleets[fleet.fleet_id] = fleet;
-      }
-      // fleets.forEach(fleet => {
-      //   this.markedFleets[fleet.fleet_id] = fleet;
-      // })
     },
     init() {
       $('#navi > div:nth-child(2)').attr('onclick',

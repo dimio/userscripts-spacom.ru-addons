@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Show
-// @version      0.1.0
+// @version      0.1.4
 // @namespace    http://dimio.org/
 // @description  Some improvements on fleet show window
 // @author       dimio (dimio@dimio.org)
@@ -10,12 +10,18 @@
 // @supportURL   https://spacom.ru/forum/discussion/47/polzovatelskie-skripty
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=game/map*
+// @include      http*://spacom.ru/?act=game/map*
 // @run-at       document-end
 // ==/UserScript==
+console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
+const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
 
 const ERR_MSG = {
-  NO_LIB: `Для работы дополнений необходимо установить и включить Spacom.Addons:<br>
-https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.user.js`,
+  NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
+<ul>
+<li>Spacom.Addons</li>
+</ul>
+<a href="${homePage}">${homePage}</a>`,
 };
 
 (function (window) {
@@ -23,24 +29,30 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
 
   window.unsafeWindow = window.unsafeWindow || window;
   const w = unsafeWindow;
+  const Addons = w.Addons;
 
   if (w.self !== w.top) {
     return;
   }
-  if (!w.Addons) {
+  if (!Addons) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
-  if (!w.Addons.Fleets) {
-    w.Addons.Fleets = {};
-  }
 
-  w.Addons.Fleets.Show = {
+  Addons.Fleets.Show = {
+    OPT: {
+      showShipsCount: true,
+      showSystemName: true,
+      showShipsHP: {
+        enable: true,
+        remainingHpRatio: 1, //0.9 by default
+      },
+    },
     shipsCount: {
       calc(ships) {
         const shipCount = {};
         //garrison ships not defined
-        if (typeof ships !== 'undefined') {
+        if (Addons.Common.isVariableDefined(ships)) {
           ships.forEach((ship) => {
             shipCount[ship.image] = (shipCount[ship.image] || 0) + 1;
           });
@@ -48,28 +60,54 @@ https://github.com/dimio/userscripts-spacom.ru-addons/raw/master/Addons/Addons.u
         return shipCount;
       },
       show(shipCount) {
-        w.$('.fleet_ico_container').each(
-            function () {
-              w.$(this).append(
-                  shipCount[w.$(this).children('img').attr('src').split(
-                      '/')[3]]);
-            }
+        $('.fleet_ico_container').each(
+          function () {
+            $(this).append(
+              shipCount[$(this).children('img').attr('src').split(
+                '/')[3]]);
+          }
         )
+      },
+    },
+    shipsHp: {
+      showRemainingHpWithRatio(){
+        const shipsBlockTmpl = $('#ship_block');
+        shipsBlockTmpl.html(shipsBlockTmpl.html().replace(
+          'if (parseInt(hp) < parseInt(hp_max * 0.9))',
+          `if (parseInt(hp) < parseInt(hp_max * ${Addons.Fleets.Show.OPT.showShipsHP.remainingHpRatio}))`
+        ));
+      }
+    },
+    systemName: {
+      showOnFleetBlock() {
+        const fleetBlockTmpl = $('#fleet_instance');
+        fleetBlockTmpl.html(fleetBlockTmpl.html().replace('y +',
+          '$& "<br><span>" + map.stars[star_id].name + "</span>" + '));
       },
     },
 
     init() {
-      const self = this;
-      const _showFleetShips = w.map.showFleetShips;
-      w.map.showFleetShips = (function (json) {
-        _showFleetShips.call(this, json);
-        self.shipsCount.show(
+      if (this.OPT.showSystemName) {
+        this.systemName.showOnFleetBlock();
+      }
+
+      if (this.OPT.showShipsCount) {
+        const self = this;
+        const _showFleetShips = w.map.showFleetShips;
+        w.map.showFleetShips = (function (json) {
+          _showFleetShips.call(this, json);
+          self.shipsCount.show(
             self.shipsCount.calc(json.fleets.fleet.ships)
-        );
-      });
+          );
+        });
+      }
+
+      if (this.OPT.showShipsHP.enable){
+        this.shipsHp.showRemainingHpWithRatio();
+      }
     }
   };
 
-  w.Addons.Fleets.Show.init();
+  Addons.Fleets.Show.init();
 
 })(window);
