@@ -12,7 +12,6 @@
 |![disabled](./img/fleets-show/fleets-show-disabled-01.png)|![enabled](./img/fleets-show/fleets-show-enabled-01.png)|
 |![disabled](./img/fleets-show/fleets-show-hp-ratio-disabled-01.png)|![enabled](./img/fleets-show/fleets-show-hp-ratio-enabled-01.png)|
 
-
 ## Настройки
 Включить или выключить отображение дополнительной информации по флотам можно, изменив настройки в тексте скрипта:
 ```js
