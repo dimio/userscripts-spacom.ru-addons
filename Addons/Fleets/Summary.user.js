@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Summary
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  none
 // @author       dimio (dimio@dimio.org)
@@ -11,7 +11,7 @@
 // @encoding     utf-8
 // @match        http*://spacom.ru/?act=game/map*
 // @include      http*://spacom.ru/?act=game/map*
-// @run-at       document-end
+// @run-at       document-idle
 // ==/UserScript==
 console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
 const homePage = GM_info.scriptMetaStr.split('\n')[6].split(' ')[6];
@@ -46,6 +46,7 @@ const ERR_MSG = {
       summaryFleetName: 'Итого',
     },
     toSummaryAllButton: null,
+    toSummaryOneButton: null,
     summaryTab: null,
     summaryParams: ['hp', 'laser_hp', 'lazer', 'rocket', 'cannon', 'weight'],
     summaryFleets: {},
@@ -106,41 +107,83 @@ const ERR_MSG = {
 
       return summaryFleet;
     },
-    getFleetOwnerTies(subMenu) {
-      if (subMenu.includes('own') || subMenu.includes('peace')) {
+    getFleetOwnerTies(owner) {
+      if (owner.includes('own') || owner.includes('peace')) {
         return 'peace';
       }
       return 'other';
     },
-    addToCmp() {
-      const ties = this.getFleetOwnerTies(w.sub_menu)
-      if (!this.summaryFleets[ties]) {
-        this.summaryFleets[ties] = [];
+    addToCmp(addFrom, id) {
+      let ties;
+      switch (addFrom) {
+        case 'fleetsTab':
+          ties = this.getFleetOwnerTies(w.sub_menu);
+          if (!this.summaryFleets[ties]) {
+            this.summaryFleets[ties] = [];
+          }
+          //NOTE: split non-own fleets and garrisons in Fleets.Sort and remove this filter
+          this.summaryFleets[ties].push(
+            ...Addons.Fleets.Sort.fleets.filter(f => {
+              return f.ico !== null && f.ico !== 'garrison.png'
+            })
+          );
+          break;
+        case 'starOne':
+        case 'starAll':
+          const fleets = (addFrom === 'starOne') ?
+            new Array(w.map.fleets[id]) :
+            w.map.fleets.filter(f => {
+              return f.star_id === id && f.ico !== null && f.ico !== 'garrison.png'
+            })
+          fleets.forEach(f => {
+            ties = this.getFleetOwnerTies(f.owner);
+            if (!this.summaryFleets[ties]) {
+              this.summaryFleets[ties] = [];
+            }
+            this.summaryFleets[ties].push(f);
+          })
+          break;
       }
-      //NOTE: split non-own fleets and garrisons in Fleets.Sort and remove this filter
-      this.summaryFleets[ties].push(
-        ...Addons.Fleets.Sort.fleets.filter(f => {
-          return f.ico !== null && f.ico !== 'garrison.png'
-        })
-      );
       this.summaryTab.toggle(true);
     },
-    addAllToSummaryButton() {
+    addButtonAllFromFleetsTab() {
       const self = this;
       const fleetsTitle = $('#items_list .player_fleet_title .fleet_actions');
       Addons.Common.waitObj(fleetsTitle, () => {
         self.toSummaryAllButton = Addons.DOM.createActionButton('Сравнить',
           'fa fa-plus', 'fleets-summary');
-        self.toSummaryAllButton.on('click', self.addToCmp.bind(self));
+        self.toSummaryAllButton.on('click', self.addToCmp.bind(self, 'fleetsTab'));
 
         Addons.DOM.replaceContent(fleetsTitle,
           fleetsTitle.children('button').length === 0,
           self.toSummaryAllButton);
       });
     },
-    init() {
-      this.addAllToSummaryButton();
+    addButtonOneFromStar() {
+      this.toSummaryOneButton = Addons.DOM.createActionButton('Сравнить',
+        'fa fa-plus', 'fleets-summary');
+      this.toSummaryOneButton.attr('onclick',
+        "Addons.Fleets.Summary.addToCmp(\"starOne\", <%=fleet_id%>)");
+      let toSummaryOneButtonHtml =
+        '<% if'
+        + '(sub_menu !== "fleets_all_summary" && '
+        + 'map.fleets[fleet_id].ico !== null && map.fleets[fleet_id].ico !== "garrison.png")'
+        + ' { %>' +
+        this.toSummaryOneButton.get(0).outerHTML.replace('</button>', '') +
+        '<% } %>';
 
+      const fleetInstance = $('#fleet_instance');
+      let fleetInstanceHtml = fleetInstance.html().split('</button>');
+      fleetInstanceHtml.splice(fleetInstanceHtml.length - 1, 0, toSummaryOneButtonHtml);
+      fleetInstance.html(fleetInstanceHtml.join('</button>'));
+    },
+    init() {
+      if (w.sub_menu) {
+        this.addButtonAllFromFleetsTab();
+      }
+      if (!this.toSummaryOneButton) {
+        this.addButtonOneFromStar();
+      }
       if (!this.summaryTab) {
         const self = this;
         this.summaryTab = Addons.DOM.createNaviBarButton('Сравнить', 6,
@@ -151,5 +194,22 @@ const ERR_MSG = {
       }
     },
   };
+
+  //NOTE Fleets.Sort:
+  /**
+   * if (Addons.Fleets.Summary) {
+   * Addons.Fleets.Summary.init();
+   * // Addons.Fleets.Summary.addButtonAllFromFleetsTab();
+   * }
+   *
+   * and add this to init //function clickFleet(fleet_id)
+   * */
+  const _clickMapStar = w.map.clickMapStar;
+  w.map.clickMapStar = function (id, fleet_id) {
+    w.sub_menu = false;
+    _clickMapStar.call(w.map, ...arguments);
+  }
+
+  Addons.Fleets.Summary.init();
 
 })(window);
