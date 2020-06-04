@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Summary
-// @version      0.1.2
+// @version      0.1.3
 // @namespace    http://dimio.org/
 // @description  none
 // @author       dimio (dimio@dimio.org)
@@ -47,9 +47,11 @@ const ERR_MSG = {
     },
     toSummaryAllButton: null,
     toSummaryOneButton: null,
+    toSummaryManyButton: null,
     summaryTab: null,
     summaryParams: ['hp', 'laser_hp', 'lazer', 'rocket', 'cannon', 'weight'],
     summaryFleets: {},
+    garrisonIco: 'garrison.png',
 
     showSummaryFleets(opt) {
       const owner = opt.owner;
@@ -124,16 +126,16 @@ const ERR_MSG = {
           //NOTE: split non-own fleets and garrisons in Fleets.Sort and remove this filter
           this.summaryFleets[ties].push(
             ...Addons.Fleets.Sort.fleets.filter(f => {
-              return f.ico !== null && f.ico !== 'garrison.png'
+              return f.ico !== null && f.ico !== this.garrisonIco
             })
           );
           break;
         case 'starOne':
-        case 'starAll':
+        case 'starMany':
           const fleets = (addFrom === 'starOne') ?
             new Array(w.map.fleets[id]) :
             w.map.fleets.filter(f => {
-              return f.star_id === id && f.ico !== null && f.ico !== 'garrison.png'
+              return +f.star_id === id && f.ico !== null && f.ico !== this.garrisonIco
             })
           fleets.forEach(f => {
             ties = this.getFleetOwnerTies(f.owner);
@@ -146,22 +148,24 @@ const ERR_MSG = {
       }
       this.summaryTab.toggle(true);
     },
+    // NOTE: to be compatible on MarkOnMap
+    //  (maybe use jQuery template, like a addButtonManyFromStar?)
     addButtonAllFromFleetsTab() {
       const self = this;
-      const fleetsTitle = $('#items_list .player_fleet_title .fleet_actions');
-      Addons.Common.waitObj(fleetsTitle, () => {
+      const fleetsTitleAction = $('#items_list .player_fleet_title .fleet_actions');
+      Addons.Common.waitObj(fleetsTitleAction, () => {
         self.toSummaryAllButton = Addons.DOM.createActionButton('Сравнить',
-          'fa fa-plus', 'fleets-summary');
+          'fa fa-plus', 'fleets-summary-from-tab');
         self.toSummaryAllButton.on('click', self.addToCmp.bind(self, 'fleetsTab'));
 
-        Addons.DOM.replaceContent(fleetsTitle,
-          fleetsTitle.children('button').length === 0,
+        Addons.DOM.replaceContent(fleetsTitleAction,
+          fleetsTitleAction.children('button').length === 0,
           self.toSummaryAllButton);
       });
     },
     addButtonOneFromStar() {
       this.toSummaryOneButton = Addons.DOM.createActionButton('Сравнить',
-        'fa fa-plus', 'fleets-summary');
+        'fa fa-plus', 'fleets-summary-one');
       this.toSummaryOneButton.attr('onclick',
         "Addons.Fleets.Summary.addToCmp(\"starOne\", <%=fleet_id%>)");
       let toSummaryOneButtonHtml =
@@ -177,12 +181,32 @@ const ERR_MSG = {
       fleetInstanceHtml.splice(fleetInstanceHtml.length - 1, 0, toSummaryOneButtonHtml);
       fleetInstance.html(fleetInstanceHtml.join('</button>'));
     },
+    addButtonManyFromStar() {
+      this.toSummaryManyButton = Addons.DOM.createActionButton('Сравнить все',
+        'fa fa-plus', 'fleets-summary-many');
+      this.toSummaryManyButton.attr('onclick',
+        "Addons.Fleets.Summary.addToCmp(\"starMany\", <%=star.id%>)");
+      let toSummaryManyButtonHtml =
+        '<% if (!sub_menu && star.id) { %>' +
+        this.toSummaryManyButton.get(0).outerHTML +
+        '<% } %>';
+
+      const fleetsTitle = $('#fleets_title');
+      let fleetsTitleHtml = fleetsTitle.html().split('</div>');
+      fleetsTitleHtml[fleetsTitleHtml.length - 3] =
+        fleetsTitleHtml[fleetsTitleHtml.length - 3].replace('Корабли', '');
+      fleetsTitleHtml[fleetsTitleHtml.length - 3] += toSummaryManyButtonHtml;
+      fleetsTitle.html(fleetsTitleHtml.join('</div>'));
+    },
     init() {
       if (w.sub_menu) {
         this.addButtonAllFromFleetsTab();
       }
       if (!this.toSummaryOneButton) {
         this.addButtonOneFromStar();
+      }
+      if (!this.toSummaryManyButton) {
+        this.addButtonManyFromStar();
       }
       if (!this.summaryTab) {
         const self = this;
@@ -195,7 +219,7 @@ const ERR_MSG = {
     },
   };
 
-  //NOTE Fleets.Sort:
+  //TODO: Fleets.Sort:
   /**
    * if (Addons.Fleets.Summary) {
    * Addons.Fleets.Summary.init();
