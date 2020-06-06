@@ -2,7 +2,7 @@
 // @name         Spacom.Addons.Fleets.Summary
 // @version      0.1.3
 // @namespace    http://dimio.org/
-// @description  none
+// @description  Compare selected fleets and show summary
 // @author       dimio (dimio@dimio.org)
 // @license      MIT
 // @homepage     https://github.com/dimio/userscripts-spacom.ru-addons
