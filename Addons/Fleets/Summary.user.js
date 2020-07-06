@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Summary
-// @version      0.1.3
+// @version      0.1.4
 // @namespace    http://dimio.org/
 // @description  Compare selected fleets and show summary
 // @author       dimio (dimio@dimio.org)
@@ -51,7 +51,8 @@ const ERR_MSG = {
     summaryTab: null,
     summaryParams: ['hp', 'laser_hp', 'lazer', 'rocket', 'cannon', 'weight'],
     summaryFleets: {},
-    garrisonIco: 'garrison.png',
+    garrisonIco: (Addons.Fleets.Common) ?
+      Addons.Fleets.Common.garrisonIco : Addons.Fleets.Sort.garrisonIco,
 
     showSummaryFleets(opt) {
       const owner = opt.owner;
@@ -171,7 +172,8 @@ const ERR_MSG = {
       let toSummaryOneButtonHtml =
         '<% if'
         + '(sub_menu !== "fleets_all_summary" && '
-        + 'map.fleets[fleet_id].ico !== null && map.fleets[fleet_id].ico !== "garrison.png")'
+        + 'map.fleets[fleet_id].ico !== null && map.fleets[fleet_id].ico !== "'
+        + this.garrisonIco + '")'
         + ' { %>' +
         this.toSummaryOneButton.get(0).outerHTML.replace('</button>', '') +
         '<% } %>';
