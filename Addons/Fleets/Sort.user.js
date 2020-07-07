@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Fleets.Sort
-// @version      0.1.3
+// @version      0.1.4
 // @namespace    http://dimio.org/
 // @description  Add a sorting and filters for fleets tabs
 // @author       dimio (dimio@dimio.org)
@@ -20,6 +20,7 @@ const ERR_MSG = {
   NO_LIB: `Для работы ${GM_info.script.name} необходимо установить и включить последние версии следующих дополнений:
 <ul>
 <li>Spacom.Addons</li>
+<li>Spacom.Addons.Fleets.Common</li>
 </ul>
 <a href="${homePage}">${homePage}</a>`,
   NO_FILTER_PARAMS: `Не найдены параметры для фильтрации.
@@ -38,6 +39,7 @@ const ERR_MSG = {
     return;
   }
   if (!Addons) {
+    // if (!Addons || !Addons.Fleets.Common) {
     w.showSmallMessage(ERR_MSG.NO_LIB);
     return;
   }
@@ -57,6 +59,7 @@ const ERR_MSG = {
 
     filters: {},
     sort: {},
+    garrisonIco: (Addons.Fleets.Common) ? Addons.Fleets.Common.garrisonIco : "5.png",
 
     toggleSubMenu(owner, fleetType, redraw) {
       const subMenu = `fleets_${owner}_${fleetType}`;
@@ -225,7 +228,7 @@ const ERR_MSG = {
     },
     setDummyGarrisonIco(fleet) {
       // hack for sorting by ship type (== ship icon)
-      return (fleet.ico !== null) ? fleet.ico : "garrison.png";
+      return (fleet.ico !== null) ? fleet.ico : this.garrisonIco;
     },
     filterBy(fleets, filter) {
       if (Addons.Common.isObjNotEmpty(fleets)) {
