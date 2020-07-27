@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Stars.StateView
-// @version      0.0.2
+// @version      0.0.3
 // @namespace    http://dimio.org/
 // @description  Improves the systems state view page
 // @author       dimio (dimio@dimio.org)
@@ -49,7 +49,9 @@ const ERR_MSG = {
         '<%='
         + "(ship_count > '0' ? "
         + "'<i class=\"fa fa-wrench help production_ico\" title=\"Уровень ремонта флота за ход, %\"></i>&nbsp;'"
-        + " + planets.map(p => p.shipyard_level).reduce((sum, curr) => sum + parseInt(curr, 10), 0)"
+        + " + planets.map(p => p.shipyard_level).reduce("
+        + "(sum, curr) => sum + (curr !== null ? parseInt(curr, 10) : 0), 0"
+        + ")"
         + " : '')"
         + '%>';
 
