@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Stars.StateView
-// @version      0.0.3
+// @version      0.2.0
 // @namespace    http://dimio.org/
 // @description  Improves the systems state view page
 // @author       dimio (dimio@dimio.org)
@@ -42,8 +42,16 @@ const ERR_MSG = {
   Addons.Stars.StateView = {
     OPT: {
       showRepairPercent: true,
+      showStationSystemName: true,
     },
 
+    showStationSystemName(){
+      const stationInstance = $('#station_instance');
+      let starInstanceHtml = stationInstance.html().replace(
+        '</a>', '<%=name > \'0\' ? \' \' + name : \'\'%></a>'
+      );
+      stationInstance.html(starInstanceHtml);
+    },
     showShipyardTotalCount() {
       let shipyardTotalCountTemplate =
         '<%='
@@ -64,6 +72,9 @@ const ERR_MSG = {
     init() {
       if (this.OPT.showRepairPercent) {
         this.showShipyardTotalCount();
+      }
+      if (this.OPT.showStationSystemName) {
+        this.showStationSystemName();
       }
     },
   }
