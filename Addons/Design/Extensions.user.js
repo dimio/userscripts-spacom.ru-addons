@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Design.Extensions
-// @version      0.1.1
+// @version      0.1.2
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
@@ -45,21 +45,33 @@ const ERR_MSG = {
   };
 
   Addons.Design.ExtraInfo = {
+    TEMPLATE: {
+      LASER: {
+        Attack: "lazer_shots'] + ' <span class=\"lazer_attack\" title=\"Суммарная атака лазеров\">&sum;&nbsp;</span>' + params['laser_power_sum'] + '&nbsp;' : '' %>",
+        Defence: "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&shy;' : '' %>",
+      },
+      CANNON: {
+        Attack: "cannon_targets'] + ' <span class=\"cannon_attack\" title=\"Суммарная атака пушек\">&sum;&nbsp;</span>' + params['cannon_power_sum'] + '&nbsp;' : '' %>",
+        Defence: "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>",
+      },
+      ROCKET: {
+        Attack: "' / ' + params['rocket_fragment_power_1'] + ' / ' + params['rocket_fragment_power_2'] + ' <i class=\"fa fa-compress rocket_attack\"",
+      },
+    },
+
     makeDesignInfoTemplate() {
       let designInfoTemplate = document.getElementById(
         'design_info_template').innerHTML;
       designInfoTemplate = designInfoTemplate.replace(
-        "lazer_shots'] + '&nbsp;' : '' %>",
-        "lazer_shots'] + ' <span class=\"lazer_attack\" title=\"Суммарная атака лазеров\">&sum;&nbsp;</span>' + params['laser_power_sum'] + '&nbsp;' : '' %>");
+        "lazer_shots'] + '&nbsp;' : '' %>", this.TEMPLATE.LASER.Attack);
       designInfoTemplate = designInfoTemplate.replace(
-        "lazer_defence'] + '%&nbsp;' : '' %>",
-        "lazer_defence'] + '%&nbsp;(' + params['laser_defence_hp'] + ' hp)&nbsp;<i class=\"fa fa-heart lazer_attack\" title=\"Очки прочности с учётом защиты от лазеров\"></i>&nbsp;' + params['laser_eq_hp'] + '&shy;' : '' %>");
+        "lazer_defence'] + '%&nbsp;' : '' %>", this.TEMPLATE.LASER.Defence);
       designInfoTemplate = designInfoTemplate.replace(
-        "cannon_defence'] + '&nbsp;' : '' %>",
-        "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>");
+        "cannon_defence'] + '&nbsp;' : '' %>", this.TEMPLATE.CANNON.Defence);
       designInfoTemplate = designInfoTemplate.replace(
-        "cannon_targets'] + '&nbsp;' : '' %>",
-        "cannon_targets'] + ' <span class=\"cannon_attack\" title=\"Суммарная атака пушек\">&sum;&nbsp;</span>' + params['cannon_power_sum'] + '&nbsp;' : '' %>");
+        "cannon_targets'] + '&nbsp;' : '' %>", this.TEMPLATE.CANNON.Attack);
+      designInfoTemplate = designInfoTemplate.replace(
+        "' <i class=\"fa fa-compress rocket_attack\"", this.TEMPLATE.ROCKET.Attack);
 
       const designInfoTemplateTail = `'' %>
         <%= ( params['ship_power'] > '0' ) ?
@@ -75,6 +87,9 @@ const ERR_MSG = {
 
       document.getElementById(
         'design_info_template').innerHTML = designInfoTemplate;
+    },
+    calcRocketFragmentPower(power) {
+      return Math.round(power / 2);
     },
     calcLaserPowerSum(params) {
       return params.lazer_power * params.lazer_shots;
@@ -123,6 +138,11 @@ const ERR_MSG = {
           design.params.hp,
           design.params.laser_eq_hp
         );
+
+        design.params.rocket_fragment_power_1 = self.calcRocketFragmentPower(
+          design.params.rocket_power);
+        design.params.rocket_fragment_power_2 = self.calcRocketFragmentPower(
+          design.params.rocket_fragment_power_1);
 
         design.params.cannon_power_sum = design.params.cannon_power;
         design.params.cannon_power = self.calcCannonPower(design.params);
