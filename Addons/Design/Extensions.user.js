@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Design.Extensions
-// @version      0.1.2
+// @version      0.1.3
 // @namespace    http://dimio.org/
 // @description  Extends the functions of a ships constructor
 // @author       dimio (dimio@dimio.org)
@@ -55,7 +55,7 @@ const ERR_MSG = {
         Defence: "cannon_defence'] + '&nbsp;<i class=\"fa fa-heart cannon_attack\" title=\"Очки прочности с учётом защиты от пушек\"></i>&nbsp;' + params['cannon_hp'] + '&nbsp;' : '' %>",
       },
       ROCKET: {
-        Attack: "' / ' + params['rocket_fragment_power_1'] + ' / ' + params['rocket_fragment_power_2'] + ' <i class=\"fa fa-compress rocket_attack\"",
+        Attack: "' / ' + params['rocket_fragment_power_1'] + ' / ' + params['rocket_fragment_power_2'] + ",
       },
     },
 
@@ -71,7 +71,8 @@ const ERR_MSG = {
       designInfoTemplate = designInfoTemplate.replace(
         "cannon_targets'] + '&nbsp;' : '' %>", this.TEMPLATE.CANNON.Attack);
       designInfoTemplate = designInfoTemplate.replace(
-        "' <i class=\"fa fa-compress rocket_attack\"", this.TEMPLATE.ROCKET.Attack);
+        "' <i class=\"fa fa-compress rocket_attack\"",
+        this.TEMPLATE.ROCKET.Attack + "$&");
 
       const designInfoTemplateTail = `'' %>
         <%= ( params['ship_power'] > '0' ) ?
@@ -95,10 +96,12 @@ const ERR_MSG = {
       return params.lazer_power * params.lazer_shots;
     },
     calcLaserEqHp(params) {
-      return Math.round(params.hp / (1 - (params.lazer_defence / 100)));
+      // return Math.round(params.hp / (1 - (params.lazer_defence / 100)));
+      return Addons.GameEngine.calcLaserEqHp(params.hp, params.lazer_defence);
     },
-    calcLaserHp(hp, laser_eq_hp) {
-      return laser_eq_hp - hp;
+    calcLaserHp(params) {
+      return (params.laser_eq_hp) ? params.laser_eq_hp - params.hp
+        : Addons.GameEngine.calcLaserHp(params.hp, params.lazer_defence);
     },
     calcCannonHp(params) {
       return params.hp + params.cannon_defence;
@@ -134,10 +137,7 @@ const ERR_MSG = {
 
         design.params.laser_power_sum = self.calcLaserPowerSum(design.params);
         design.params.laser_eq_hp = self.calcLaserEqHp(design.params);
-        design.params.laser_defence_hp = self.calcLaserHp(
-          design.params.hp,
-          design.params.laser_eq_hp
-        );
+        design.params.laser_defence_hp = self.calcLaserHp(design.params);
 
         design.params.rocket_fragment_power_1 = self.calcRocketFragmentPower(
           design.params.rocket_power);

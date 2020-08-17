@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons
-// @version      0.1.2
+// @version      0.2.0
 // @namespace    http://dimio.org/
 // @description  Provide Spacom.Addons library functions on spacom.ru
 // @author       dimio (dimio@dimio.org)
@@ -32,6 +32,7 @@ console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
       Design: {},
       DOM: {},
       Fleets: {},
+      GameEngine: {},
       Map: {},
       Sort: {},
       Stars: {},
@@ -79,7 +80,7 @@ console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
     },
     isVariableDefined(value) {
       if (typeof value === 'undefined') {
-        return false; //retrun value >>> 0
+        return false; //return value >>> 0
       }
       return value !== null;
     },
@@ -183,6 +184,15 @@ console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
       return next;
     },
   };
+
+  Addons.GameEngine = {
+    calcLaserEqHp(hp, laserDefence) {
+      return Math.round(hp / (1 - (laserDefence / 100)));
+    },
+    calcLaserHp(hp, laserDefence) {
+      return hp - this.calcLaserEqHp(hp, laserDefence);
+    },
+  }
 
   Addons.Sort = {
     alphabetically(a, b) {
