@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spacom.Addons.Decor
-// @version      0.1.2
+// @version      0.1.3
 // @namespace    http://dimio.org/
 // @description  Some game interface view improvements
 // @author       dimio (dimio@dimio.org)
@@ -46,12 +46,12 @@ const ERR_MSG = {
     },
 
     formatShortNumber() {
-      const _short_number = w.short_number;
+      const _short_number = w.short_number; //in main.js
       w.short_number = function (number) {
         return (number < 10000) ?
           parseInt(number, 10).toLocaleString() :
           _short_number.call(this, number)
-          .replace(/^(\d+)(\w)$/, "$1&nbsp;$2");
+          .replace(/^(\d+\.?\d*)([K|M])$/, "$1&nbsp;$2");
       }
     },
     addServerGlobalTurn() {
