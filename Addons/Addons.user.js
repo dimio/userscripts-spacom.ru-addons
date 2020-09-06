@@ -34,6 +34,7 @@ console.log(GM_info.script.name, 'booted v.', GM_info.script.version);
       Fleets: {},
       GameEngine: {},
       Map: {},
+      Premium: {},
       Sort: {},
       Stars: {},
     };
